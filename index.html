@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Morpheus TO DO List - Cloud</title>
+    <style>
+        /* --- STILE GENERALE --- */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            color: #333;
+        }
+        .header-container {
+            max-width: 1200px;
+            margin: 0 auto 25px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+        .header {
+            flex-grow: 1;
+            text-align: center;
+            color: #0056b3;
+            margin-left: 50px;
+        }
+        .btn-settings {
+            background: #ffffff;
+            border: 1px solid #cbd5e0;
+            font-size: 1.4em;
+            padding: 8px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+        .btn-settings:hover {
+            background: #e2e8f0;
+            transform: scale(1.05);
+        }
+        
+        /* --- GRIGLIA PRINCIPALE --- */
+        .main-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0px 30px;
+        }
+
+        .column-header {
+            text-align: center;
+            color: white;
+            padding: 15px;
+            font-size: 1.4em;
+            font-weight: bold;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .bg-business { background-color: #4a5568; }
+        .bg-personal { background-color: #1a365d; }
+
+        /* --- BLOCCHI DELLE SEZIONI --- */
+        .section-box {
+            border: 2px solid;
+            border-radius: 12px;
+            padding: 15px;
+            height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.03);
+        }
+        .border-business { border-color: #718096; background-color: #f7fafc; }
+        .border-personal { border-color: #2b6cb0; background-color: #ebf8ff; }
+
+        .section-title {
+            font-weight: bold;
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .text-business { color: #4a5568; }
+        .text-personal { color: #1a365d; }
+
+        .task-container-scroll {
+            overflow-y: auto;
+            flex-grow: 1;
+            margin-bottom: 10px;
+            padding-right: 5px;
+        }
+
+        .row-separator {
+            grid-column: span 2;
+            text-align: center;
+            margin: 15px 0;
+            border-top: 2px dashed #cbd5e0;
+            height: 0;
+        }
+
+        /* --- ELEMENTI DEI TASK --- */
+        .task-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: white;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 5px solid #cbd5e0;
+            font-size: 0.95em;
+        }
+        
+        .priority-red { border-left-color: #e53e3e; background-color: #fff5f5; }
+        .priority-yellow { border-left-color: #ecc94b; background-color: #fffdf5; }
+        .priority-green { border-left-color: #38a169; background-color: #f0fff4; }
+
+        .task-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-check {
+            background: none;
+            border: none;
+            color: #38a169;
+            cursor: pointer;
+            font-size: 1.1em;
+            padding: 0;
+        }
+        .btn-delete {
+            background: none;
+            border: none;
+            color: #a0aec0;
+            cursor: pointer;
+            font-size: 1.1em;
+            padding: 0;
+        }
+        .btn-delete:hover { color: #e53e3e; }
+        
+        /* --- FORM DI INSERIMENTO TASK --- */
+        .add-form {
+            display: flex;
+            gap: 5px;
+            background: #edf2f7;
+            padding: 5px;
+            border-radius: 6px;
+        }
+        .add-form input {
+            flex-grow: 1;
+            padding: 6px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+        .add-form input[type="time"] {
+            flex-grow: 0;
+            width: 75px;
+        }
+        .add-form select {
+            padding: 6px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 0.85em;
+            background: white;
+        }
+        .add-form button {
+            background-color: #4a5568;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.85em;
+        }
+        .bg-personal .add-form button { background-color: #1a365d; }
+        .add-form button:hover { opacity: 0.9; }
+
+        /* --- SEZIONE STORICO / SINTESI --- */
+        .history-section {
+            max-width: 1200px;
+            margin: 40px auto 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .history-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #edf2f7;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .nav-buttons button {
+            background: #ffffff;
+            border: 1px solid #cbd5e0;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .nav-buttons button:hover { background: #e2e8f0; }
+        .datepicker-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+        .datepicker-container input {
+            padding: 5px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+        }
+        .history-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        .history-box {
+            border: 2px solid;
+            border-radius: 12px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .history-box-bus { border-color: #718096; background-color: #f7fafc; }
+        .history-box-per { border-color: #2b6cb0; background-color: #ebf8ff; }
+
+        /* --- STRUTTURA POP-UP / MODAL --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .modal-box {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            font-size: 1.2em;
+            cursor: pointer;
+            color: #718096;
+        }
+        .modal-close:hover { color: #333; }
+        .status-indicator {
+            padding: 8px;
+            background: #fff3cd;
+            color: #856404;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.85em;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .main-grid, .history-grid { grid-template-columns: 1fr; gap: 15px; }
+            .row-separator { grid-column: span 1; display: none; }
+            .section-box { height: auto; min-height: 180px; }
+            .history-controls { flex-direction: column; align-items: stretch; text-align: center; }
+            .header-container { flex-direction: column; gap: 10px; }
+            .header { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-container">
+        <div class="header">
+            <h1>TO DO – <span id="current-date">gg/mm/aaaa</span></h1>
+        </div>
+        <button class="btn-settings" onclick="apriCloudStatusModal()" title="Stato Sincronizzazione Cloud">☁️ Sincronizzazione</button>
+    </div>
+
+    <div class="main-grid">
+        <div class="column-header bg-business">Business</div>
+        <div class="column-header bg-personal">Personal</div>
+
+        <div class="section-box border-business">
+            <div>
+                <p class="section-title text-business">Meeting / Call / Eventi</p>
+                <div class="task-container-scroll"><ul class="task-list" id="list-bus-meetings"></ul></div>
+            </div>
+            <div class="add-form">
+                <input type="time" id="time-bus-meetings" value="09:00">
+                <input type="text" id="input-bus-meetings" placeholder="Nome evento/call...">
+                <button onclick="addTask('bus-meetings')">+</button>
+            </div>
+        </div>
+        
+        <div class="section-box border-personal">
+            <div>
+                <p class="section-title text-personal">Meeting / Call / Eventi</p>
+                <div class="task-container-scroll"><ul class="task-list" id="list-per-meetings"></ul></div>
+            </div>
+            <div class="add-form">
+                <input type="time" id="time-per-meetings" value="12:00">
+                <input type="text" id="input-per-meetings" placeholder="Nome evento...">
+                <button onclick="addTask('per-meetings')">+</button>
+            </div>
+        </div>
+
+        <div class="row-separator"></div>
+
+        <div class="section-box border-business">
+            <div>
+                <p class="section-title text-business">Ricorrenti (Tutti i giorni / Feriali)</p>
+                <div class="task-container-scroll"><ul class="task-list" id="list-bus-recurring"></ul></div>
+            </div>
+            <div class="add-form">
+                <input type="text" id="input-bus-recurring" placeholder="Nuovo task ricorrente...">
+                <select id="select-bus-recurring">
+                    <option value="tutti">Tutti i giorni</option>
+                    <option value="feriali">Solo Feriali</option>
+                </select>
+                <button onclick="addTask('bus-recurring')">+</button>
+            </div>
+        </div>
+
+        <div class="section-box border-personal">
+            <div>
+                <p class="section-title text-personal">Ricorrenti (Tutti i giorni / Feriali)</p>
+                <div class="task-container-scroll"><ul class="task-list" id="list-per-recurring"></ul></div>
+            </div>
+            <div class="add-form">
+                <input type="text" id="input-per-recurring" placeholder="Nuovo task ricorrente...">
+                <select id="select-per-recurring">
+                    <option value="tutti">Tutti i giorni</option>
+                    <option value="feriali">Solo Feriali</option>
+                </select>
+                <button onclick="addTask('per-recurring')">+</button>
+            </div>
+        </div>
+
+        <div class="row-separator"></div>
+
+        <div class="section-box border-business">
+            <div>
+                <p class="section-title text-business">Task della giornata</p>
+                <div class="task-container-scroll"><ul class="task-list" id="list-bus-today"></ul></div>
+            </div>
+            <div class="add-form">
+                <input type="text" id="input-bus-today" placeholder="Nuovo task odierno...">
+                <select id="select-bus-today">
+                    <option value="red">🔴 Urgente</option>
+                    <option value="yellow">🟡 Normale</option>
+                    <option value="green">🟢 Promemoria</option>
+                </select>
+                <button onclick="addTask('bus-today')">+</button>
+            </div>
+        </div>
+
+        <div class="section-box border-personal">
+            <div>
+                <p class="section-title text-personal">Task della giornata</p>
+                <div class="task-container-scroll"><ul class="task-list" id="list-per-today"></ul></div>
+            </div>
+            <div class="add-form">
+                <input type="text" id="input-per-today" placeholder="Nuovo task odierno...">
+                <select id="select-per-today">
+                    <option value="red">🔴 Urgente</option>
+                    <option value="yellow">🟡 Normale</option>
+                    <option value="green">🟢 Promemoria</option>
+                </select>
+                <button onclick="addTask('per-today')">+</button>
+            </div>
+        </div>
+
+        <div class="row-separator"></div>
+
+        <div class="section-box border-business">
+            <div>
+                <p class="section-title text-business">Task Someday</p>
+                <div class="task-container-scroll"><ul class="task-list" id="list-bus-someday"></ul></div>
+            </div>
+            <div class="add-form">
+                <input type="text" id="input-bus-someday" placeholder="Qualcosa da fare in futuro...">
+                <select id="select-bus-someday">
+                    <option value="red">🔴 Alta Priorità</option>
+                    <option value="yellow">🟡 Media Priorità</option>
+                    <option value="green">🟢 Bassa Priorità</option>
+                </select>
+                <button onclick="addTask('bus-someday')">+</button>
+            </div>
+        </div>
+
+        <div class="section-box border-personal">
+            <div>
+                <p class="section-title text-personal">Task Someday</p>
+                <div class="task-container-scroll"><ul class="task-list" id="list-per-someday"></ul></div>
+            </div>
+            <div class="add-form">
+                <input type="text" id="input-per-someday" placeholder="Qualcosa da fare in futuro...">
+                <select id="select-per-someday">
+                    <option value="red">🔴 Alta Priorità</option>
+                    <option value="yellow">🟡 Media Priorità</option>
+                    <option value="green">🟢 Bassa Priorità</option>
+                </select>
+                <button onclick="addTask('per-someday')">+</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="history-section">
+        <h2>Sintesi Settimanale Storica</h2>
+        <div class="history-controls">
+            <div class="nav-buttons">
+                <button onclick="navigaSettimana(-7)">◀ Sett. Precedente</button>
+                <button onclick="vaiAggi()">(Oggi)</button>
+                <button onclick="navigaSettimana(7)">Sett. Successiva ▶</button>
+            </div>
+            <div style="font-weight: bold; font-size: 1.05em; color: #2d3748;" id="week-range">...</div>
+            <div class="datepicker-container">
+                <label for="history-date-picker">Vai alla data:</label>
+                <input type="date" id="history-date-picker" onchange="selezionaDataCalendario(this.value)">
+            </div>
+        </div>
+        
+        <div class="history-grid">
+            <div>
+                <h4 style="margin-top:0; background-color: #4a5568; color: white; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; font-size: 1.1em;">Business</h4>
+                <div class="history-box history-box-bus">
+                    <ul class="task-list" id="list-history-bus"></ul>
+                </div>
+            </div>
+            <div>
+                <h4 style="margin-top:0; background-color: #1a365d; color: white; padding: 10px; border-radius: 6px; text-align: center; font-weight: bold; font-size: 1.1em;">Personal</h4>
+                <div class="history-box history-box-per">
+                    <ul class="task-list" id="list-history-per"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="cloud-modal">
+        <div class="modal-box">
+            <button class="modal-close" onclick="chiudiCloudStatusModal()">✕</button>
+            <h3>☁️ Hub Sincronizzazione Realtime</h3>
+            <div class="status-indicator" id="cloud-status-text">Connessione a Supabase Cloud...</div>
+            <p style="font-size: 0.9em; color:#4a5568; line-height: 1.4;">
+                La tua lista è ora salvata in cloud su Supabase. Ogni modifica eseguita da PC verrà riflessa istantaneamente sul tuo smartphone e viceversa.
+            </p>
+            <p style="font-size: 0.8em; color:#718096;">ID Sincronizzazione: unico_utente (Account Gratuito Corrente)</p>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURAZIONE ACCOUNT SUPABASE ---
+        const SUPABASE_URL = "https://cdyozgrfnoenyebfklvo.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_cwNcGiaGO0R7SvUG_10mSQ_DTfOck72";
+
+        let dataStoricoVisualizzato = new Date();
+        const oggiReale = new Date();
+        document.getElementById('current-date').innerText = oggiReale.toLocaleDateString('it-IT');
+
+        // Struttura dati base di fallback
+        let appData = {
+            'bus-meetings': [], 'per-meetings': [],
+            'bus-recurring': [], 'per-recurring': [],
+            'bus-today': [], 'per-today': [],
+            'bus-someday': [], 'per-someday': [],
+            'history-bus': [], 'history-per': [],
+            'ultimoAccesso': oggiReale.toLocaleDateString('it-IT')
+        };
+
+        // --- COMUNICAZIONE DATABASE CLOUD ---
+        async function fetchFromCloud() {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/todo_morpheus?user_id=eq.unico_utente`, {
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+                const data = await response.json();
+                if (data && data.length > 0) {
+                    appData = data[0].data_tasks;
+                    controllaCambioGiorno();
+                    renderLists();
+                    document.getElementById('cloud-status-text').style.background = '#d4edda';
+                    document.getElementById('cloud-status-text').style.color = '#155724';
+                    document.getElementById('cloud-status-text').innerText = "✅ Connesso - Cloud Sincronizzato";
+                }
+            } catch (err) {
+                console.error("Errore download cloud:", err);
+                document.getElementById('cloud-status-text').style.background = '#f8d7da';
+                document.getElementById('cloud-status-text').style.color = '#721c24';
+                document.getElementById('cloud-status-text').innerText = "⚠️ Errore di connessione cloud";
+            }
+        }
+
+        async function saveToCloud() {
+            try {
+                await fetch(`${SUPABASE_URL}/rest/v1/todo_morpheus?user_id=eq.unico_utente`, {
+                    method: "PATCH",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": `Bearer ${SUPABASE_KEY}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        data_tasks: appData,
+                        updated_at: new Date().toISOString()
+                    })
+                });
+            } catch (err) {
+                console.error("Errore caricamento cloud:", err);
+            }
+        }
+
+        // POLLING AUTOMATICO IN TEMPO REALE (Scarica aggiornamenti ogni 4 secondi se fatti da telefono)
+        setInterval(fetchFromCloud, 4000);
+
+        // --- AUTOMAZIONE CAMBIO GIORNO ---
+        function controllaCambioGiorno() {
+            const stringaOggi = oggiReale.toLocaleDateString('it-IT');
+            if (appData.ultimoAccesso !== stringaOggi && appData.ultimoAccesso !== "") {
+                const dataIeriStr = appData.ultimoAccesso;
+
+                ['bus', 'per'].forEach(tipo => {
+                    appData[`${tipo}-meetings`].forEach(meeting => {
+                        let testoStorico = `[${meeting.time}] ${meeting.text} (Archivio Autom.)`;
+                        appData[`history-${tipo}`].unshift({
+                            text: testoStorico,
+                            dateAdded: dataIeriStr
+                        });
+                    });
+                    appData[`${tipo}-meetings`] = [];
+                });
+
+                ['bus', 'per'].forEach(tipo => {
+                    appData[`${tipo}-today`].forEach(task => {
+                        if (!task.text.includes('(Residuo)')) {
+                            task.text = `${task.text} <span style="color:#e53e3e; font-size:0.8em; font-weight:bold;">(Residuo)</span>`;
+                        }
+                    });
+                });
+
+                appData.ultimoAccesso = stringaOggi;
+                saveToCloud();
+            } else if (appData.ultimoAccesso === "") {
+                appData.ultimoAccesso = stringaOggi;
+                saveToCloud();
+            }
+        }
+
+        // --- MODAL POPUP ---
+        function apriCloudStatusModal() {
+            document.getElementById('cloud-modal').style.display = 'flex';
+        }
+        function chiudiCloudStatusModal() {
+            document.getElementById('cloud-modal').style.display = 'none';
+        }
+
+        // --- CALCOLO INTERVALLI SETTIMANALI ---
+        function aggiornaIntervalloSettimanaVisibile() {
+            const d = new Date(dataStoricoVisualizzato);
+            const giornoSettimana = d.getDay();
+            const inizioDom = new Date(d);
+            inizioDom.setDate(d.getDate() - giornoSettimana);
+            const fineSabato = new Date(inizioDom);
+            fineSabato.setDate(inizioDom.getDate() + 6);
+
+            document.getElementById('week-range').innerText = `da Dom ${inizioDom.toLocaleDateString('it-IT')} a Sab ${fineSabato.toLocaleDateString('it-IT')}`;
+            return { inizio: azzeraOra(inizioDom), fine: azzeraOra(fineSabato) };
+        }
+
+        function convertiData(stringaData) {
+            const parti = stringaData.split('/');
+            return new Date(parti[2], parti[1] - 1, parti[0]);
+        }
+        function azzeraOra(d) {
+            const nuovaData = new Date(d);
+            nuovaData.setHours(0,0,0,0);
+            return nuovaData;
+        }
+
+        function navigaSettimana(giorni) {
+            dataStoricoVisualizzato.setDate(dataStoricoVisualizzato.getDate() + giorni);
+            renderLists();
+        }
+        function vaiAggi() {
+            dataStoricoVisualizzato = new Date();
+            document.getElementById('history-date-picker').value = '';
+            renderLists();
+        }
+        function selezionaDataCalendario(valoreData) {
+            if (!valoreData) return;
+            dataStoricoVisualizzato = new Date(valoreData);
+            renderLists();
+        }
+
+        // --- RENDER DELLE INTERFACCE ---
+        function renderLists() {
+            const rangeSettimana = aggiornaIntervalloSettimanaVisibile();
+            const giornoOggi = oggiReale.getDay();
+            const esWeekend = (giornoOggi === 0 || giornoOggi === 6);
+
+            const chiaviListe = ['bus-meetings', 'per-meetings', 'bus-recurring', 'per-recurring', 'bus-today', 'per-today', 'bus-someday', 'per-someday'];
+            
+            chiaviListe.forEach(key => {
+                const listElement = document.getElementById(`list-${key}`);
+                if (!listElement) return;
+                listElement.innerHTML = '';
+                
+                if (appData[key]) {
+                    appData[key].forEach((task, index) => {
+                        if (key.includes('recurring') && task.option === 'feriali' && esWeekend) return; 
+
+                        const li = document.createElement('li');
+                        li.className = 'task-item';
+                        if (task.priority) li.classList.add(`priority-${task.priority}`);
+                        
+                        let extraInfo = '';
+                        if (task.option === 'feriali') extraInfo = ' <small style="color:#718096;">(Feriali)</small>';
+                        if (task.time) extraInfo = ` <strong>[${task.time}]</strong>`;
+
+                        li.innerHTML = `
+                            <span>${extraInfo} ${task.text}</span>
+                            <div class="task-buttons">
+                                <button class="btn-check" onclick="archiveTask('${key}', ${index})" title="Completa e Sposta in Storico">✅</button>
+                                <button class="btn-delete" onclick="deleteTaskPermanently('${key}', ${index})" title="Elimina Definitivamente">🗑️</button>
+                            </div>
+                        `;
+                        listElement.appendChild(li);
+                    });
+                }
+            });
+
+            ['bus', 'per'].forEach(tipo => {
+                const histElement = document.getElementById(`list-history-${tipo}`);
+                if (!histElement) return;
+                histElement.innerHTML = '';
+                
+                if (appData[`history-${tipo}`]) {
+                    appData[`history-${tipo}`].forEach((task, index) => {
+                        const dataTask = convertiData(task.dateAdded);
+                        if (dataTask >= rangeSettimana.inizio && dataTask <= rangeSettimana.fine) {
+                            const li = document.createElement('li');
+                            li.className = 'task-item';
+                            li.style.background = '#f1f3f5';
+                            li.innerHTML = `
+                                <span><small style="color:#718096;">[${task.dateAdded}]</small> ${task.text}</span>
+                                <button class="btn-delete" onclick="deleteHistoryTask('${tipo}', ${index})">🗑️</button>
+                            `;
+                            histElement.appendChild(li);
+                        }
+                    });
+                }
+            });
+        }
+
+        // --- AZIONI AGGIUNTA, ARCHIVIAZIONE ED ELIMINAZIONE ---
+        function addTask(key) {
+            const inputEl = document.getElementById(`input-${key}`);
+            const text = inputEl.value.trim();
+            if (text === '') return;
+
+            let newTask = { text: text };
+
+            if (key.includes('meetings')) {
+                const timeEl = document.getElementById(`time-${key}`);
+                newTask.time = timeEl.value;
+            } else if (key.includes('recurring')) {
+                const selectEl = document.getElementById(`select-${key}`);
+                newTask.option = selectEl.value;
+            } else {
+                const selectEl = document.getElementById(`select-${key}`);
+                newTask.priority = selectEl.value;
+            }
+
+            appData[key].push(newTask);
+
+            if (key.includes('meetings')) {
+                appData[key].sort((a, b) => a.time.localeCompare(b.time));
+            }
+
+            inputEl.value = '';
+            renderLists();
+            saveToCloud();
+        }
+
+        function archiveTask(key, index) {
+            const removedTask = appData[key].splice(index, 1)[0];
+            const destinazioneStorico = key.startsWith('bus-') ? 'history-bus' : 'history-per';
+            
+            let testoStorico = removedTask.text;
+            if (removedTask.time) testoStorico = `[${removedTask.time}] ${testoStorico}`;
+            
+            const taskStorico = {
+                text: testoStorico,
+                dateAdded: oggiReale.toLocaleDateString('it-IT')
+            };
+
+            appData[destinazioneStorico].unshift(taskStorico);
+            renderLists();
+            saveToCloud();
+        }
+
+        function deleteTaskPermanently(key, index) {
+            if (confirm("Vuoi eliminare definitivamente questo task senza salvarlo nello storico?")) {
+                appData[key].splice(index, 1);
+                renderLists();
+                saveToCloud();
+            }
+        }
+
+        function deleteHistoryTask(tipo, index) {
+            appData[`history-${tipo}`].splice(index, 1);
+            renderLists();
+            saveToCloud();
+        }
+
+        // Inizializzazione tasto Invio
+        document.querySelectorAll('.add-form input').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const form = this.closest('.add-form');
+                    const btn = form.querySelector('button');
+                    if (btn) btn.click();
+                }
+            });
+        });
+
+        // Primo avvio dell'applicazione
+        fetchFromCloud();
+    </script>
+</body>
+</html>
