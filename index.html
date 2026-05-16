@@ -52,22 +52,22 @@
             margin: 0 auto;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 20px;
+            gap: 25px;
         }
 
         .column-header {
             text-align: center;
             color: white;
-            padding: 12px;
-            font-size: 1.3em;
+            padding: 14px;
+            font-size: 1.4em;
             font-weight: bold;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        .bg-business { background-color: #4a5568; }
-        .bg-personal { background-color: #1a365d; }
+        .bg-business { background-color: #4a5568; grid-column: 1; }
+        .bg-personal { background-color: #1a365d; grid-column: 2; }
 
-        /* --- BLOCCHI DELLE SEZIONI --- */
+        /* --- BLOCCHI DELLE SEZIONI (COLORI SCURI RICHIESTI) --- */
         .section-box {
             border: 2px solid;
             border-radius: 12px;
@@ -76,21 +76,30 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            box-shadow: 0 3px 5px rgba(0,0,0,0.03);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.08);
         }
-        .border-business { border-color: #718096; background-color: #f7fafc; }
-        .border-personal { border-color: #2b6cb0; background-color: #ebf8ff; }
+        
+        /* Business: Grigio Scuro Personalizzato */
+        .border-business { 
+            border-color: #4e4a4a; 
+            background-color: #767171; 
+        }
+        /* Personal: Blu/Azzurro Scuro Personalizzato */
+        .border-personal { 
+            border-color: #6c8aa6; 
+            background-color: #8FAADC; 
+        }
 
         .section-title {
-            font-weight: bold;
+            font-weight: 800;
             margin-top: 0;
             margin-bottom: 12px;
             font-size: 0.95em;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.6px;
+            color: white; /* Testo bianco per risaltare sugli sfondi scuri */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
         }
-        .text-business { color: #4a5568; }
-        .text-personal { color: #1a365d; }
 
         .task-container-scroll {
             overflow-y: auto;
@@ -102,7 +111,7 @@
         .row-separator {
             grid-column: span 2;
             text-align: center;
-            margin: 10px 0;
+            margin: 5px 0;
             border-top: 2px dashed #cbd5e0;
             height: 0;
         }
@@ -124,6 +133,7 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             border-left: 5px solid #cbd5e0;
             font-size: 0.95em;
+            color: #1a202c;
         }
         
         .priority-red { border-left-color: #e53e3e; background-color: #fff5f5; }
@@ -132,7 +142,7 @@
 
         .task-buttons {
             display: flex;
-            gap: 12px; /* Più spazio su mobile per evitare tocchi errati */
+            gap: 12px;
         }
 
         .btn-check, .btn-delete {
@@ -150,9 +160,10 @@
         .add-form {
             display: flex;
             gap: 8px;
-            background: #edf2f7;
+            background: rgba(255, 255, 255, 0.85); /* Leggermente più opaco per contrastare meglio */
             padding: 6px;
             border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.15);
         }
         .add-form input {
             flex-grow: 1;
@@ -174,7 +185,6 @@
             max-width: 110px;
         }
         .add-form button {
-            background-color: #4a5568;
             color: white;
             border: none;
             padding: 8px 14px;
@@ -182,8 +192,11 @@
             cursor: pointer;
             font-weight: bold;
             font-size: 1em;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
-        .bg-personal .add-form button { background-color: #1a365d; }
+        /* Colori bottoni coordinati ai macro-sfondi */
+        .border-business .add-form button { background-color: #4a5568; }
+        .border-personal .add-form button { background-color: #1a365d; }
 
         /* --- SEZIONE STORICO / SINTESI --- */
         .history-section {
@@ -241,8 +254,8 @@
             max-height: 300px;
             overflow-y: auto;
         }
-        .history-box-bus { border-color: #718096; background-color: #f7fafc; }
-        .history-box-per { border-color: #2b6cb0; background-color: #ebf8ff; }
+        .history-box-bus { border-color: #4e4a4a; background-color: #767171; }
+        .history-box-per { border-color: #6c8aa6; background-color: #8FAADC; }
 
         /* --- POP-UP MODAL --- */
         .modal-overlay {
@@ -278,7 +291,7 @@
         }
 
         /* ==========================================================================
-           ⚡ BREAKPOINT MOBILE: OTTIMIZZAZIONI PER DISPLAY STRETTI ⚡
+           ⚡ BREAKPOINT MOBILE: ORDINE FLUSSO IMPOSTATO PERFETTAMENTE ⚡
            ========================================================================== */
         @media (max-width: 768px) {
             body {
@@ -299,33 +312,36 @@
                 padding: 10px;
             }
             
-            /* Trasforma la griglia affiancata in una lista verticale */
+            /* Struttura flex a colonna singola */
             .main-grid {
-                grid-template-columns: 1fr;
+                display: flex;
+                flex-direction: column;
                 gap: 15px;
             }
             
-            /* Gestione degli header delle colonne su mobile */
             .column-header {
-                margin-top: 15px;
-                margin-bottom: 5px;
-                font-size: 1.2em;
+                margin-top: 10px;
+                margin-bottom: 0px;
+                font-size: 1.3em;
+                width: 100%;
+                box-sizing: border-box;
             }
-            /* Forza l'ordinamento logico: Business e le sue sezioni, poi Personal e le sue sezioni */
-            .column-header.bg-business { order: 1; }
-            .border-business:nth-of-type(1) { order: 2; } /* Meetings Bus */
-            .border-business:nth-of-type(3) { order: 3; } /* Recurring Bus */
-            .border-business:nth-of-type(5) { order: 4; } /* Today Bus */
-            .border-business:nth-of-type(7) { order: 5; } /* Someday Bus */
 
-            .column-header.bg-personal { order: 6; }
-            .border-personal:nth-of-type(2) { order: 7; } /* Meetings Per */
-            .border-personal:nth-of-type(4) { order: 8; } /* Recurring Per */
-            .border-personal:nth-of-type(6) { order: 9; } /* Today Per */
-            .border-personal:nth-of-type(8) { order: 10; } /* Someday Per */
+            /* Ordinamento rigoroso degli elementi */
+            .column-header.bg-business { order: 1; }
+            .border-business:nth-of-type(1) { order: 2; } /* Meeting Business */
+            .border-business:nth-of-type(3) { order: 3; } /* Ricorrenti Business */
+            .border-business:nth-of-type(5) { order: 4; } /* Giornata Business */
+            .border-business:nth-of-type(7) { order: 5; } /* Someday Business */
+
+            .column-header.bg-personal { order: 6; margin-top: 25px; } /* Stacco visivo prima del blocco Personal */
+            .border-personal:nth-of-type(2) { order: 7; } /* Meeting Personal */
+            .border-personal:nth-of-type(4) { order: 8; } /* Ricorrenti Personal */
+            .border-personal:nth-of-type(6) { order: 9; } /* Giornata Personal */
+            .border-personal:nth-of-type(8) { order: 10; } /* Someday Personal */
 
             .row-separator {
-                display: none; /* Nasconde i divisori tratteggiati superflui su mobile */
+                display: none;
             }
             
             .section-box {
@@ -333,7 +349,6 @@
                 min-height: 190px;
             }
             
-            /* Rende i form interni più compatti ed evita testi minuscoli o tagliati */
             .add-form {
                 flex-wrap: wrap;
             }
@@ -368,7 +383,8 @@
                 flex-grow: 1;
             }
             .history-grid {
-                grid-template-columns: 1fr;
+                display: flex;
+                flex-direction: column;
                 gap: 15px;
             }
         }
