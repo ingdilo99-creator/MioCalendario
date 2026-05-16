@@ -64,10 +64,10 @@
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-        .bg-business { background-color: #4a5568; grid-column: 1; }
-        .bg-personal { background-color: #1a365d; grid-column: 2; }
+        .bg-business { background-color: #4a5568; }
+        .bg-personal { background-color: #1a365d; }
 
-        /* --- BLOCCHI DELLE SEZIONI (COLORI SCURI RICHIESTI) --- */
+        /* --- BLOCCHI DELLE SEZIONI (COLORI SCURI SCELTI) --- */
         .section-box {
             border: 2px solid;
             border-radius: 12px;
@@ -77,27 +77,49 @@
             flex-direction: column;
             justify-content: space-between;
             box-shadow: 0 4px 6px rgba(0,0,0,0.08);
+            position: relative; /* Necessario per posizionare il tag mobile */
         }
         
-        /* Business: Grigio Scuro Personalizzato */
         .border-business { 
             border-color: #4e4a4a; 
             background-color: #767171; 
         }
-        /* Personal: Blu/Azzurro Scuro Personalizzato */
         .border-personal { 
             border-color: #6c8aa6; 
             background-color: #8FAADC; 
         }
 
+        /* Etichette interne invisibili su PC, appariranno solo su Mobile */
+        .mobile-category-tag {
+            display: none;
+            font-size: 0.75em;
+            font-weight: 900;
+            text-transform: uppercase;
+            padding: 3px 8px;
+            border-radius: 4px;
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            letter-spacing: 1px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .tag-bus { background: #4a5568; color: white; }
+        .tag-per { background: #1a365d; color: white; }
+
+        .section-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
         .section-title {
             font-weight: 800;
-            margin-top: 0;
-            margin-bottom: 12px;
+            margin: 0;
             font-size: 0.95em;
             text-transform: uppercase;
             letter-spacing: 0.6px;
-            color: white; /* Testo bianco per risaltare sugli sfondi scuri */
+            color: white;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
         }
 
@@ -160,7 +182,7 @@
         .add-form {
             display: flex;
             gap: 8px;
-            background: rgba(255, 255, 255, 0.85); /* Leggermente più opaco per contrastare meglio */
+            background: rgba(255, 255, 255, 0.85);
             padding: 6px;
             border-radius: 8px;
             border: 1px solid rgba(0,0,0,0.15);
@@ -194,7 +216,6 @@
             font-size: 1em;
             box-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
-        /* Colori bottoni coordinati ai macro-sfondi */
         .border-business .add-form button { background-color: #4a5568; }
         .border-personal .add-form button { background-color: #1a365d; }
 
@@ -291,55 +312,58 @@
         }
 
         /* ==========================================================================
-           ⚡ BREAKPOINT MOBILE: ORDINE FLUSSO IMPOSTATO PERFETTAMENTE ⚡
+           ⚡ BREAKPOINT MOBILE: OTTIMIZZAZIONE COMPLETA INTERFACCIA ⚡
            ========================================================================== */
         @media (max-width: 768px) {
             body {
                 padding: 10px;
             }
+            
+            /* Sistema l'header: TO DO fisso in alto e Sincronizzazione centrato sotto di esso */
             .header-container {
-                flex-direction: column-reverse;
+                display: flex;
+                flex-direction: column; /* Sposta il bottone cloud SOTTO al titolo */
                 align-items: center;
                 gap: 12px;
-                margin-bottom: 15px;
+                margin-bottom: 20px;
+                width: 100%;
+            }
+            .header {
+                width: 100%;
+                text-align: center;
+                order: 1; /* Forza il titolo TO DO a stare sopra */
             }
             .header h1 {
                 font-size: 1.5em;
+                white-space: nowrap;
+                margin: 0;
             }
             .btn-settings {
+                order: 2; /* Forza il bottone Sincronizzazione a stare sotto */
                 width: 100%;
                 text-align: center;
-                padding: 10px;
+                padding: 12px;
+                box-sizing: border-box;
+                font-size: 1em;
             }
             
-            /* Struttura flex a colonna singola */
+            /* Nascondiamo completamente i due grandi cartelloni che vagavano a caso */
+            .column-header {
+                display: none !important;
+            }
+            
+            /* Griglia a colonna singola nativa senza alterare gli "order" */
             .main-grid {
                 display: flex;
                 flex-direction: column;
                 gap: 15px;
             }
             
-            .column-header {
-                margin-top: 10px;
-                margin-bottom: 0px;
-                font-size: 1.3em;
-                width: 100%;
-                box-sizing: border-box;
+            /* Facciamo comparire la targhetta della categoria nell'angolo del box */
+            .mobile-category-tag {
+                display: inline-block;
             }
-
-            /* Ordinamento rigoroso degli elementi */
-            .column-header.bg-business { order: 1; }
-            .border-business:nth-of-type(1) { order: 2; } /* Meeting Business */
-            .border-business:nth-of-type(3) { order: 3; } /* Ricorrenti Business */
-            .border-business:nth-of-type(5) { order: 4; } /* Giornata Business */
-            .border-business:nth-of-type(7) { order: 5; } /* Someday Business */
-
-            .column-header.bg-personal { order: 6; margin-top: 25px; } /* Stacco visivo prima del blocco Personal */
-            .border-personal:nth-of-type(2) { order: 7; } /* Meeting Personal */
-            .border-personal:nth-of-type(4) { order: 8; } /* Ricorrenti Personal */
-            .border-personal:nth-of-type(6) { order: 9; } /* Giornata Personal */
-            .border-personal:nth-of-type(8) { order: 10; } /* Someday Personal */
-
+            
             .row-separator {
                 display: none;
             }
@@ -347,6 +371,7 @@
             .section-box {
                 height: auto;
                 min-height: 190px;
+                padding-top: 35px; /* Crea spazio in alto per non sovrapporsi alla targhetta */
             }
             
             .add-form {
@@ -366,7 +391,7 @@
                 margin-top: 2px;
             }
 
-            /* Ottimizzazione Storico in basso */
+            /* Storico */
             .history-controls {
                 flex-direction: column;
                 align-items: stretch;
