@@ -4,38 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Morpheus TO DO List - Cloud</title>
-    <style>
+<style>
         /* --- STILE GENERALE --- */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f4f6f9;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             color: #333;
         }
         .header-container {
             max-width: 1200px;
-            margin: 0 auto 25px auto;
+            margin: 0 auto 20px auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: relative;
+            gap: 10px;
         }
         .header {
             flex-grow: 1;
             text-align: center;
             color: #0056b3;
-            margin-left: 50px;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 1.8em;
         }
         .btn-settings {
             background: #ffffff;
             border: 1px solid #cbd5e0;
-            font-size: 1.4em;
+            font-size: 1.1em;
             padding: 8px 12px;
             border-radius: 8px;
             cursor: pointer;
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             transition: all 0.2s;
+            white-space: nowrap;
         }
         .btn-settings:hover {
             background: #e2e8f0;
@@ -48,17 +52,16 @@
             margin: 0 auto;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 0px 30px;
+            gap: 20px;
         }
 
         .column-header {
             text-align: center;
             color: white;
-            padding: 15px;
-            font-size: 1.4em;
+            padding: 12px;
+            font-size: 1.3em;
             font-weight: bold;
             border-radius: 8px;
-            margin-bottom: 20px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .bg-business { background-color: #4a5568; }
@@ -69,7 +72,7 @@
             border: 2px solid;
             border-radius: 12px;
             padding: 15px;
-            height: 220px;
+            height: 240px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -99,7 +102,7 @@
         .row-separator {
             grid-column: span 2;
             text-align: center;
-            margin: 15px 0;
+            margin: 10px 0;
             border-top: 2px dashed #cbd5e0;
             height: 0;
         }
@@ -114,7 +117,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 8px 12px;
+            padding: 10px 12px;
             background: white;
             border-radius: 6px;
             margin-bottom: 8px;
@@ -129,70 +132,63 @@
 
         .task-buttons {
             display: flex;
-            gap: 6px;
+            gap: 12px; /* Più spazio su mobile per evitare tocchi errati */
         }
 
-        .btn-check {
+        .btn-check, .btn-delete {
             background: none;
             border: none;
-            color: #38a169;
             cursor: pointer;
-            font-size: 1.1em;
-            padding: 0;
+            font-size: 1.2em;
+            padding: 4px;
         }
-        .btn-delete {
-            background: none;
-            border: none;
-            color: #a0aec0;
-            cursor: pointer;
-            font-size: 1.1em;
-            padding: 0;
-        }
+        .btn-check { color: #38a169; }
+        .btn-delete { color: #a0aec0; }
         .btn-delete:hover { color: #e53e3e; }
         
         /* --- FORM DI INSERIMENTO TASK --- */
         .add-form {
             display: flex;
-            gap: 5px;
+            gap: 8px;
             background: #edf2f7;
-            padding: 5px;
-            border-radius: 6px;
+            padding: 6px;
+            border-radius: 8px;
         }
         .add-form input {
             flex-grow: 1;
-            padding: 6px;
+            padding: 8px;
             border: 1px solid #cbd5e0;
-            border-radius: 4px;
-            font-size: 0.85em;
+            border-radius: 6px;
+            font-size: 0.9em;
         }
         .add-form input[type="time"] {
             flex-grow: 0;
-            width: 75px;
+            width: 85px;
         }
         .add-form select {
-            padding: 6px;
+            padding: 8px;
             border: 1px solid #cbd5e0;
-            border-radius: 4px;
-            font-size: 0.85em;
+            border-radius: 6px;
+            font-size: 0.9em;
             background: white;
+            max-width: 110px;
         }
         .add-form button {
             background-color: #4a5568;
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 8px 14px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
-            font-size: 0.85em;
+            font-size: 1em;
         }
         .bg-personal .add-form button { background-color: #1a365d; }
-        .add-form button:hover { opacity: 0.9; }
 
         /* --- SEZIONE STORICO / SINTESI --- */
         .history-section {
             max-width: 1200px;
-            margin: 40px auto 0 auto;
+            margin: 30px auto 0 auto;
             background: white;
             padding: 20px;
             border-radius: 12px;
@@ -203,21 +199,25 @@
             justify-content: space-between;
             align-items: center;
             background: #edf2f7;
-            padding: 10px 15px;
+            padding: 12px 15px;
             border-radius: 8px;
             margin-bottom: 15px;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 12px;
+        }
+        .nav-buttons {
+            display: flex;
+            gap: 6px;
         }
         .nav-buttons button {
             background: #ffffff;
             border: 1px solid #cbd5e0;
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 8px 12px;
+            border-radius: 6px;
             cursor: pointer;
             font-weight: bold;
+            font-size: 0.9em;
         }
-        .nav-buttons button:hover { background: #e2e8f0; }
         .datepicker-container {
             display: flex;
             align-items: center;
@@ -225,9 +225,9 @@
             font-size: 0.9em;
         }
         .datepicker-container input {
-            padding: 5px;
+            padding: 6px;
             border: 1px solid #cbd5e0;
-            border-radius: 4px;
+            border-radius: 6px;
         }
         .history-grid {
             display: grid;
@@ -244,7 +244,7 @@
         .history-box-bus { border-color: #718096; background-color: #f7fafc; }
         .history-box-per { border-color: #2b6cb0; background-color: #ebf8ff; }
 
-        /* --- STRUTTURA POP-UP / MODAL --- */
+        /* --- POP-UP MODAL --- */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -272,29 +272,105 @@
             right: 15px;
             background: none;
             border: none;
-            font-size: 1.2em;
+            font-size: 1.4em;
             cursor: pointer;
             color: #718096;
         }
-        .modal-close:hover { color: #333; }
-        .status-indicator {
-            padding: 8px;
-            background: #fff3cd;
-            color: #856404;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            font-size: 0.85em;
-            text-align: center;
-            font-weight: bold;
-        }
 
+        /* ==========================================================================
+           ⚡ BREAKPOINT MOBILE: OTTIMIZZAZIONI PER DISPLAY STRETTI ⚡
+           ========================================================================== */
         @media (max-width: 768px) {
-            .main-grid, .history-grid { grid-template-columns: 1fr; gap: 15px; }
-            .row-separator { grid-column: span 1; display: none; }
-            .section-box { height: auto; min-height: 180px; }
-            .history-controls { flex-direction: column; align-items: stretch; text-align: center; }
-            .header-container { flex-direction: column; gap: 10px; }
-            .header { margin-left: 0; }
+            body {
+                padding: 10px;
+            }
+            .header-container {
+                flex-direction: column-reverse;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 15px;
+            }
+            .header h1 {
+                font-size: 1.5em;
+            }
+            .btn-settings {
+                width: 100%;
+                text-align: center;
+                padding: 10px;
+            }
+            
+            /* Trasforma la griglia affiancata in una lista verticale */
+            .main-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+            
+            /* Gestione degli header delle colonne su mobile */
+            .column-header {
+                margin-top: 15px;
+                margin-bottom: 5px;
+                font-size: 1.2em;
+            }
+            /* Forza l'ordinamento logico: Business e le sue sezioni, poi Personal e le sue sezioni */
+            .column-header.bg-business { order: 1; }
+            .border-business:nth-of-type(1) { order: 2; } /* Meetings Bus */
+            .border-business:nth-of-type(3) { order: 3; } /* Recurring Bus */
+            .border-business:nth-of-type(5) { order: 4; } /* Today Bus */
+            .border-business:nth-of-type(7) { order: 5; } /* Someday Bus */
+
+            .column-header.bg-personal { order: 6; }
+            .border-personal:nth-of-type(2) { order: 7; } /* Meetings Per */
+            .border-personal:nth-of-type(4) { order: 8; } /* Recurring Per */
+            .border-personal:nth-of-type(6) { order: 9; } /* Today Per */
+            .border-personal:nth-of-type(8) { order: 10; } /* Someday Per */
+
+            .row-separator {
+                display: none; /* Nasconde i divisori tratteggiati superflui su mobile */
+            }
+            
+            .section-box {
+                height: auto;
+                min-height: 190px;
+            }
+            
+            /* Rende i form interni più compatti ed evita testi minuscoli o tagliati */
+            .add-form {
+                flex-wrap: wrap;
+            }
+            .add-form input[type="text"] {
+                flex-grow: 1;
+                min-width: 120px;
+            }
+            .add-form select {
+                flex-grow: 1;
+                max-width: none;
+            }
+            .add-form button {
+                width: 100%;
+                padding: 10px;
+                margin-top: 2px;
+            }
+
+            /* Ottimizzazione Storico in basso */
+            .history-controls {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+            .nav-buttons {
+                justify-content: center;
+            }
+            .datepicker-container {
+                justify-content: center;
+                width: 100%;
+            }
+            .datepicker-container input {
+                flex-grow: 1;
+            }
+            .history-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
         }
     </style>
 </head>
