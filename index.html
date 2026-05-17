@@ -533,7 +533,7 @@
             <p style="font-size: 0.9em; color:#4a5568; line-height: 1.4;">
                 La tua lista è ora salvata in cloud su Supabase. Ogni modifica eseguita da PC verrà riflessa istantaneamente sul tuo smartphone e viceversa.
             </p>
-            <p style="font-size: 0.8em; color:#718096;">ID Sincronizzazione: unico_utente (Account Gratuito Corrente)</p>
+            <p style="font-size: 0.8em; color:#718096;">ID Riga Database: Record Fisso #1 (Tabella Semplificata)</p>
         </div>
     </div>
 
@@ -559,19 +559,23 @@
             'ultimoAccesso': oggiReale.toLocaleDateString('it-IT')
         };
 
+        // Riferimento all'ID primario fisso (usiamo l'id 1 per memorizzare tutto lo stato dell'app)
+        const RECORD_ID = 1;
+
         // --- COMUNICAZIONE DATABASE CLOUD CON METODI SUPABASE NATIVI ---
         async function fetchFromCloud() {
             try {
-                // Sostituita la vecchia fetch(404) con la sintassi nativa di Supabase
+                // Utilizza la nuova tabella prelevando l'intero JSON dalla colonna "Titolo" dell'id 1
                 const { data, error } = await supabaseClient
-                    .from('todo_morpheus')
-                    .select('data_tasks')
-                    .eq('user_id', 'unico_utente');
+                    .from('todos')
+                    .select('Titolo')
+                    .eq('id', RECORD_ID);
 
                 if (error) throw error;
 
-                if (data && data.length > 0) {
-                    appData = data[0].data_tasks;
+                if (data && data.length > 0 && data[0].Titolo) {
+                    // Decodifica la stringa JSON salvata nella colonna Titolo
+                    appData = JSON.parse(data[0].Titolo);
                     controllaCambioGiorno();
                     renderLists();
                     
@@ -579,8 +583,11 @@
                     if (statusText) {
                         statusText.style.background = '#d4edda';
                         statusText.style.color = '#155724';
-                        statusText.style.innerText = "✅ Connesso - Cloud Sincronizzato";
+                        statusText.innerText = "✅ Connesso - Cloud Sincronizzato";
                     }
+                } else {
+                    // Se la riga non esiste ancora (es. primo avvio in assoluto), la creiamo inserendo i dati base
+                    await saveToCloud();
                 }
             } catch (err) {
                 console.error("Errore download cloud:", err);
@@ -588,21 +595,23 @@
                 if (statusText) {
                     statusText.style.background = '#f8d7da';
                     statusText.style.color = '#721c24';
-                    statusText.style.innerText = "⚠️ Errore di connessione cloud";
+                    statusText.innerText = "⚠️ Errore di connessione cloud";
                 }
             }
         }
 
         async function saveToCloud() {
             try {
-                // Sostituito PATCH HTTP fallimentare con l'upsert ufficiale dell'SDK di Supabase
+                // Converte l'oggetto appData in stringa per salvarlo in "Titolo"
+                const stringData = JSON.stringify(appData);
+
+                // Eseguiamo l'upsert sulla tabella "todos" puntando all'id fisso 1
                 const { error } = await supabaseClient
-                    .from('todo_morpheus')
+                    .from('todos')
                     .upsert({
-                        user_id: 'unico_utente',
-                        data_tasks: appData,
-                        updated_at: new Date().toISOString()
-                    }, { onConflict: 'user_id' });
+                        id: RECORD_ID,
+                        Titolo: stringData
+                    }, { onConflict: 'id' });
 
                 if (error) throw error;
             } catch (err) {
@@ -653,168 +662,4 @@
             document.getElementById('cloud-modal').style.display = 'flex';
         }
         function chiudiCloudStatusModal() {
-            document.getElementById('cloud-modal').style.display = 'none';
-        }
-
-        // --- CALCOLO INTERVALLI SETTIMANALI ---
-        function aggiornaIntervalloSettimanaVisibile() {
-            const d = new Date(dataStoricoVisualizzato);
-            const giornoSettimana = d.getDay();
-            const inizioDom = new Date(d);
-            inizioDom.setDate(d.getDate() - giornoSettimana);
-            const fineSabato = new Date(inizioDom);
-            fineSabato.setDate(inizioDom.getDate() + 6);
-
-            document.getElementById('week-range').innerText = `da Dom ${inizioDom.toLocaleDateString('it-IT')} a Sab ${fineSabato.toLocaleDateString('it-IT')}`;
-            return { inizio: azzeraOra(inizioDom), fine: azzeraOra(fineSabato) };
-        }
-
-        function convertiData(stringaData) {
-            const parti = stringaData.split('/');
-            return new Date(parti[2], parti[1] - 1, parti[0]);
-        }
-        function azzeraOra(d) {
-            const nuovaData = new Date(d);
-            nuovaData.setHours(0,0,0,0);
-            return nuovaData;
-        }
-
-        function navigaSettimana(giorni) {
-            dataStoricoVisualizzato.setDate(dataStoricoVisualizzato.getDate() + giorni);
-            renderLists();
-        }
-        function vaiAggi() {
-            dataStoricoVisualizzato = new Date();
-            document.getElementById('history-date-picker').value = '';
-            renderLists();
-        }
-        function selezionaDataCalendario(valoreData) {
-            if (!valoreData) return;
-            dataStoricoVisualizzato = new Date(valoreData);
-            renderLists();
-        }
-
-        // --- RENDER DELLE INTERFACCE ---
-        function renderLists() {
-            const rangeSettimana = aggiornaIntervalloSettimanaVisibile();
-            const giornoOggi = oggiReale.getDay();
-            const esWeekend = (giornoOggi === 0 || giornoOggi === 6);
-
-            const chiaviListe = ['bus-meetings', 'per-meetings', 'bus-recurring', 'per-recurring', 'bus-today', 'per-today', 'bus-someday', 'per-someday'];
-            
-            chiaviListe.forEach(key => {
-                const listElement = document.getElementById(`list-${key}`);
-                if (!listElement) return;
-                listElement.innerHTML = '';
-                
-                if (appData[key]) {
-                    appData[key].forEach((task, index) => {
-                        if (key.includes('recurring') && task.option === 'feriali' && esWeekend) return; 
-
-                        const li = document.createElement('li');
-                        li.className = 'task-item';
-                        if (task.priority) li.classList.add(`priority-${task.priority}`);
-                        
-                        let extraInfo = '';
-                        if (task.option === 'feriali') extraInfo = ' <small style="color:#718096;">(Feriali)</small>';
-                        if (task.time) extraInfo = ` <strong>[${task.time}]</strong>`;
-
-                        li.innerHTML = `
-                            <span>${extraInfo} ${task.text}</span>
-                            <div class="task-buttons">
-                                <button class="btn-check" onclick="archiveTask('${key}', ${index})" title="Completa e Sposta in Storico">✅</button>
-                                <button class="btn-delete" onclick="deleteTaskPermanently('${key}', ${index})" title="Elimina Definitivamente">🗑️</button>
-                            </div>
-                        `;
-                        listElement.appendChild(li);
-                    });
-                }
-            });
-
-            ['bus', 'per'].forEach(tipo => {
-                const histElement = document.getElementById(`list-history-${tipo}`);
-                if (!histElement) return;
-                histElement.innerHTML = '';
-                
-                if (appData[`history-${tipo}`]) {
-                    appData[`history-${tipo}`].forEach((task, index) => {
-                        const dataTask = convertiData(task.dateAdded);
-                        if (dataTask >= rangeSettimana.inizio && dataTask <= rangeSettimana.fine) {
-                            const li = document.createElement('li');
-                            li.className = 'task-item';
-                            li.style.background = '#f1f3f5';
-                            li.innerHTML = `
-                                <span><small style="color:#718096;">[${task.dateAdded}]</small> ${task.text}</span>
-                                <button class="btn-delete" onclick="deleteHistoryTask('${tipo}', ${index})">🗑️</button>
-                            `;
-                            histElement.appendChild(li);
-                        }
-                    });
-                }
-            });
-        }
-
-        // --- AZIONI AGGIUNTA, ARCHIVIAZIONE ED ELIMINAZIONE ---
-        function addTask(key) {
-            const inputEl = document.getElementById(`input-${key}`);
-            const text = inputEl.value.trim();
-            if (text === '') return;
-
-            let newTask = { text: text };
-
-            if (key.includes('meetings')) {
-                const timeEl = document.getElementById(`time-${key}`);
-                newTask.time = timeEl.value;
-            } else if (key.includes('recurring')) {
-                const selectEl = document.getElementById(`select-${key}`);
-                newTask.option = selectEl.value;
-            } else {
-                const selectEl = document.getElementById(`select-${key}`);
-                newTask.priority = selectEl.value;
-            }
-
-            appData[key].push(newTask);
-
-            if (key.includes('meetings')) {
-                appData[key].sort((a, b) => a.time.localeCompare(b.time));
-            }
-
-            inputEl.value = '';
-            renderLists();
-            saveToCloud();
-        }
-
-        function archiveTask(key, index) {
-            const removedTask = appData[key].splice(index, 1)[0];
-            const tipo = key.startsWith('bus') ? 'bus' : 'per';
-            
-            let testoStorico = removedTask.text;
-            if (removedTask.time) testoStorico = `[${removedTask.time}] ${testoStorico}`;
-            
-            appData[`history-${tipo}`].unshift({
-                text: testoStorico,
-                dateAdded: oggiReale.toLocaleDateString('it-IT')
-            });
-            
-            renderLists();
-            saveToCloud();
-        }
-
-        function deleteTaskPermanently(key, index) {
-            if (confirm("Eliminare definitivamente questo task?")) {
-                appData[key].splice(index, 1);
-                renderLists();
-                saveToCloud();
-            }
-        }
-
-        function deleteHistoryTask(tipo, index) {
-            if (confirm("Eliminare questa voce dallo storico?")) {
-                appData[`history-${tipo}`].splice(index, 1);
-                renderLists();
-                saveToCloud();
-            }
-        }
-    </script>
-</body>
-</html>
+            document.getElementById('cloud-modal').style.display = 'none
