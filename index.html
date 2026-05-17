@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Morpheus TO DO List - Cloud</title>
-<style>
+    <style>
         /* --- STILE GENERALE --- */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -67,7 +67,7 @@
         .bg-business { background-color: #4a5568; }
         .bg-personal { background-color: #1a365d; }
 
-        /* --- BLOCCHI DELLE SEZIONI (COLORI SCURI SCELTI) --- */
+        /* --- BLOCCHI DELLE SEZIONI --- */
         .section-box {
             border: 2px solid;
             border-radius: 12px;
@@ -319,10 +319,9 @@
                 padding: 10px;
             }
             
-            /* Sistema l'header: TO DO fisso in alto e Sincronizzazione centrato sotto di esso */
             .header-container {
                 display: flex;
-                flex-direction: column; /* Sposta il bottone cloud SOTTO al titolo */
+                flex-direction: column;
                 align-items: center;
                 gap: 12px;
                 margin-bottom: 20px;
@@ -331,7 +330,7 @@
             .header {
                 width: 100%;
                 text-align: center;
-                order: 1; /* Forza il titolo TO DO a stare sopra */
+                order: 1;
             }
             .header h1 {
                 font-size: 1.5em;
@@ -339,7 +338,7 @@
                 margin: 0;
             }
             .btn-settings {
-                order: 2; /* Forza il bottone Sincronizzazione a stare sotto */
+                order: 2;
                 width: 100%;
                 text-align: center;
                 padding: 12px;
@@ -347,19 +346,16 @@
                 font-size: 1em;
             }
             
-            /* Nascondiamo completamente i due grandi cartelloni che vagavano a caso */
             .column-header {
                 display: none !important;
             }
             
-            /* Griglia a colonna singola nativa senza alterare gli "order" */
             .main-grid {
                 display: flex;
                 flex-direction: column;
                 gap: 15px;
             }
             
-            /* Facciamo comparire la targhetta della categoria nell'angolo del box */
             .mobile-category-tag {
                 display: inline-block;
             }
@@ -371,7 +367,7 @@
             .section-box {
                 height: auto;
                 min-height: 190px;
-                padding-top: 35px; /* Crea spazio in alto per non sovrapporsi alla targhetta */
+                padding-top: 35px;
             }
             
             .add-form {
@@ -429,6 +425,7 @@
         <div class="column-header bg-personal">Personal</div>
 
         <div class="section-box border-business">
+            <span class="mobile-category-tag tag-bus">Business</span>
             <div>
                 <p class="section-title text-business">Meeting / Call / Eventi</p>
                 <div class="task-container-scroll"><ul class="task-list" id="list-bus-meetings"></ul></div>
@@ -441,6 +438,7 @@
         </div>
         
         <div class="section-box border-personal">
+            <span class="mobile-category-tag tag-per">Personal</span>
             <div>
                 <p class="section-title text-personal">Meeting / Call / Eventi</p>
                 <div class="task-container-scroll"><ul class="task-list" id="list-per-meetings"></ul></div>
@@ -455,6 +453,7 @@
         <div class="row-separator"></div>
 
         <div class="section-box border-business">
+            <span class="mobile-category-tag tag-bus">Business</span>
             <div>
                 <p class="section-title text-business">Ricorrenti (Tutti i giorni / Feriali)</p>
                 <div class="task-container-scroll"><ul class="task-list" id="list-bus-recurring"></ul></div>
@@ -470,6 +469,7 @@
         </div>
 
         <div class="section-box border-personal">
+            <span class="mobile-category-tag tag-per">Personal</span>
             <div>
                 <p class="section-title text-personal">Ricorrenti (Tutti i giorni / Feriali)</p>
                 <div class="task-container-scroll"><ul class="task-list" id="list-per-recurring"></ul></div>
@@ -487,6 +487,7 @@
         <div class="row-separator"></div>
 
         <div class="section-box border-business">
+            <span class="mobile-category-tag tag-bus">Business</span>
             <div>
                 <p class="section-title text-business">Task della giornata</p>
                 <div class="task-container-scroll"><ul class="task-list" id="list-bus-today"></ul></div>
@@ -503,6 +504,7 @@
         </div>
 
         <div class="section-box border-personal">
+            <span class="mobile-category-tag tag-per">Personal</span>
             <div>
                 <p class="section-title text-personal">Task della giornata</p>
                 <div class="task-container-scroll"><ul class="task-list" id="list-per-today"></ul></div>
@@ -521,6 +523,7 @@
         <div class="row-separator"></div>
 
         <div class="section-box border-business">
+            <span class="mobile-category-tag tag-bus">Business</span>
             <div>
                 <p class="section-title text-business">Task Someday</p>
                 <div class="task-container-scroll"><ul class="task-list" id="list-bus-someday"></ul></div>
@@ -537,6 +540,7 @@
         </div>
 
         <div class="section-box border-personal">
+            <span class="mobile-category-tag tag-per">Personal</span>
             <div>
                 <p class="section-title text-personal">Task Someday</p>
                 <div class="task-container-scroll"><ul class="task-list" id="list-per-someday"></ul></div>
@@ -660,7 +664,7 @@
             }
         }
 
-        // POLLING AUTOMATICO IN TEMPO REALE (Scarica aggiornamenti ogni 4 secondi se fatti da telefono)
+        // POLLING AUTOMATICO IN TEMPO REALE
         setInterval(fetchFromCloud, 4000);
 
         // --- AUTOMAZIONE CAMBIO GIORNO ---
@@ -837,24 +841,23 @@
             const destinazioneStorico = key.startsWith('bus-') ? 'history-bus' : 'history-per';
             
             let testoStorico = removedTask.text;
-            if (removedTask.time) testoStorico = `[${removedTask.time}] ${testoStorico}`;
-            
-            const taskStorico = {
+            if (removedTask.time) {
+                testoStorico = `[${removedTask.time}] ${testoStorico}`;
+            }
+
+            appData[destinazioneStorico].unshift({
                 text: testoStorico,
                 dateAdded: oggiReale.toLocaleDateString('it-IT')
-            };
+            });
 
-            appData[destinazioneStorico].unshift(taskStorico);
             renderLists();
             saveToCloud();
         }
 
         function deleteTaskPermanently(key, index) {
-            if (confirm("Vuoi eliminare definitivamente questo task senza salvarlo nello storico?")) {
-                appData[key].splice(index, 1);
-                renderLists();
-                saveToCloud();
-            }
+            appData[key].splice(index, 1);
+            renderLists();
+            saveToCloud();
         }
 
         function deleteHistoryTask(tipo, index) {
@@ -863,18 +866,7 @@
             saveToCloud();
         }
 
-        // Inizializzazione tasto Invio
-        document.querySelectorAll('.add-form input').forEach(input => {
-            input.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    const form = this.closest('.add-form');
-                    const btn = form.querySelector('button');
-                    if (btn) btn.click();
-                }
-            });
-        });
-
-        // Primo avvio dell'applicazione
+        // Avvio iniziale dell'app al caricamento della pagina
         fetchFromCloud();
     </script>
 </body>
