@@ -77,7 +77,7 @@
             flex-direction: column;
             justify-content: space-between;
             box-shadow: 0 4px 6px rgba(0,0,0,0.08);
-            position: relative; /* Necessario per posizionare il tag mobile */
+            position: relative;
         }
         
         .border-business { 
@@ -89,7 +89,6 @@
             background-color: #8FAADC; 
         }
 
-        /* Etichette interne invisibili su PC, appariranno solo su Mobile */
         .mobile-category-tag {
             display: none;
             font-size: 0.75em;
@@ -310,15 +309,16 @@
             cursor: pointer;
             color: #718096;
         }
+        .status-indicator {
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
 
-        /* ==========================================================================
-           ⚡ BREAKPOINT MOBILE: OTTIMIZZAZIONE COMPLETA INTERFACCIA ⚡
-           ========================================================================== */
         @media (max-width: 768px) {
-            body {
-                padding: 10px;
-            }
-            
+            body { padding: 10px; }
             .header-container {
                 display: flex;
                 flex-direction: column;
@@ -327,89 +327,26 @@
                 margin-bottom: 20px;
                 width: 100%;
             }
-            .header {
-                width: 100%;
-                text-align: center;
-                order: 1;
-            }
-            .header h1 {
-                font-size: 1.5em;
-                white-space: nowrap;
-                margin: 0;
-            }
-            .btn-settings {
-                order: 2;
-                width: 100%;
-                text-align: center;
-                padding: 12px;
-                box-sizing: border-box;
-                font-size: 1em;
-            }
-            
-            .column-header {
-                display: none !important;
-            }
-            
-            .main-grid {
-                display: flex;
-                flex-direction: column;
-                gap: 15px;
-            }
-            
-            .mobile-category-tag {
-                display: inline-block;
-            }
-            
-            .row-separator {
-                display: none;
-            }
-            
-            .section-box {
-                height: auto;
-                min-height: 190px;
-                padding-top: 35px;
-            }
-            
-            .add-form {
-                flex-wrap: wrap;
-            }
-            .add-form input[type="text"] {
-                flex-grow: 1;
-                min-width: 120px;
-            }
-            .add-form select {
-                flex-grow: 1;
-                max-width: none;
-            }
-            .add-form button {
-                width: 100%;
-                padding: 10px;
-                margin-top: 2px;
-            }
-
-            /* Storico */
-            .history-controls {
-                flex-direction: column;
-                align-items: stretch;
-                text-align: center;
-            }
-            .nav-buttons {
-                justify-content: center;
-            }
-            .datepicker-container {
-                justify-content: center;
-                width: 100%;
-            }
-            .datepicker-container input {
-                flex-grow: 1;
-            }
-            .history-grid {
-                display: flex;
-                flex-direction: column;
-                gap: 15px;
-            }
+            .header { width: 100%; text-align: center; order: 1; }
+            .header h1 { font-size: 1.5em; white-space: nowrap; margin: 0; }
+            .btn-settings { order: 2; width: 100%; text-align: center; padding: 12px; box-sizing: border-box; font-size: 1em; }
+            .column-header { display: none !important; }
+            .main-grid { display: flex; flex-direction: column; gap: 15px; }
+            .mobile-category-tag { display: inline-block; }
+            .row-separator { display: none; }
+            .section-box { height: auto; min-height: 190px; padding-top: 35px; }
+            .add-form { flex-wrap: wrap; }
+            .add-form input[type="text"] { flex-grow: 1; min-width: 120px; }
+            .add-form select { flex-grow: 1; max-width: none; }
+            .add-form button { width: 100%; padding: 10px; margin-top: 2px; }
+            .history-controls { flex-direction: column; align-items: stretch; text-align: center; }
+            .nav-buttons { justify-content: center; }
+            .datepicker-container { justify-content: center; width: 100%; }
+            .datepicker-container input { flex-grow: 1; }
+            .history-grid { display: flex; flex-direction: column; gap: 15px; }
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -592,7 +529,7 @@
         <div class="modal-box">
             <button class="modal-close" onclick="chiudiCloudStatusModal()">✕</button>
             <h3>☁️ Hub Sincronizzazione Realtime</h3>
-            <div class="status-indicator" id="cloud-status-text">Connessione a Supabase Cloud...</div>
+            <div class="status-indicator" id="cloud-status-text" style="background: #e2e8f0; color: #4a5568;">Connessione a Supabase Cloud...</div>
             <p style="font-size: 0.9em; color:#4a5568; line-height: 1.4;">
                 La tua lista è ora salvata in cloud su Supabase. Ogni modifica eseguita da PC verrà riflessa istantaneamente sul tuo smartphone e viceversa.
             </p>
@@ -601,9 +538,12 @@
     </div>
 
     <script>
-        // --- CONFIGURAZIONE ACCOUNT SUPABASE ---
+        // --- CONFIGURAZIONE ACCOUNT SUPABASE CORRETTA ---
         const SUPABASE_URL = "https://cdyozgrfnoenyebfklvo.supabase.co";
         const SUPABASE_KEY = "sb_publishable_cwNcGiaGO0R7SvUG_10mSQ_DTfOck72";
+
+        // Inizializzazione client Supabase nativo usando le variabili corrette
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let dataStoricoVisualizzato = new Date();
         const oggiReale = new Date();
@@ -619,53 +559,61 @@
             'ultimoAccesso': oggiReale.toLocaleDateString('it-IT')
         };
 
-        // --- COMUNICAZIONE DATABASE CLOUD ---
+        // --- COMUNICAZIONE DATABASE CLOUD CON METODI SUPABASE NATIVI ---
         async function fetchFromCloud() {
             try {
-                const response = await fetch(`${SUPABASE_URL}/rest/v1/todo_morpheus?user_id=eq.unico_utente`, {
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": `Bearer ${SUPABASE_KEY}`
-                    }
-                });
-                const data = await response.json();
+                // Sostituita la vecchia fetch(404) con la sintassi nativa di Supabase
+                const { data, error } = await supabaseClient
+                    .from('todo_morpheus')
+                    .select('data_tasks')
+                    .eq('user_id', 'unico_utente');
+
+                if (error) throw error;
+
                 if (data && data.length > 0) {
                     appData = data[0].data_tasks;
                     controllaCambioGiorno();
                     renderLists();
-                    document.getElementById('cloud-status-text').style.background = '#d4edda';
-                    document.getElementById('cloud-status-text').style.color = '#155724';
-                    document.getElementById('cloud-status-text').innerText = "✅ Connesso - Cloud Sincronizzato";
+                    
+                    const statusText = document.getElementById('cloud-status-text');
+                    if (statusText) {
+                        statusText.style.background = '#d4edda';
+                        statusText.style.color = '#155724';
+                        statusText.style.innerText = "✅ Connesso - Cloud Sincronizzato";
+                    }
                 }
             } catch (err) {
                 console.error("Errore download cloud:", err);
-                document.getElementById('cloud-status-text').style.background = '#f8d7da';
-                document.getElementById('cloud-status-text').style.color = '#721c24';
-                document.getElementById('cloud-status-text').innerText = "⚠️ Errore di connessione cloud";
+                const statusText = document.getElementById('cloud-status-text');
+                if (statusText) {
+                    statusText.style.background = '#f8d7da';
+                    statusText.style.color = '#721c24';
+                    statusText.style.innerText = "⚠️ Errore di connessione cloud";
+                }
             }
         }
 
         async function saveToCloud() {
             try {
-                await fetch(`${SUPABASE_URL}/rest/v1/todo_morpheus?user_id=eq.unico_utente`, {
-                    method: "PATCH",
-                    headers: {
-                        "apikey": SUPABASE_KEY,
-                        "Authorization": `Bearer ${SUPABASE_KEY}`,
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
+                // Sostituito PATCH HTTP fallimentare con l'upsert ufficiale dell'SDK di Supabase
+                const { error } = await supabaseClient
+                    .from('todo_morpheus')
+                    .upsert({
+                        user_id: 'unico_utente',
                         data_tasks: appData,
                         updated_at: new Date().toISOString()
-                    })
-                });
+                    }, { onConflict: 'user_id' });
+
+                if (error) throw error;
             } catch (err) {
                 console.error("Errore caricamento cloud:", err);
             }
         }
 
-        // POLLING AUTOMATICO IN TEMPO REALE
+        // POLLING AUTOMATICO IN TEMPO REALE (Ogni 4 secondi scarica i dati aggiornati dall'altro dispositivo)
         setInterval(fetchFromCloud, 4000);
+        // Primo caricamento all'apertura della pagina
+        fetchFromCloud();
 
         // --- AUTOMAZIONE CAMBIO GIORNO ---
         function controllaCambioGiorno() {
@@ -838,36 +786,35 @@
 
         function archiveTask(key, index) {
             const removedTask = appData[key].splice(index, 1)[0];
-            const destinazioneStorico = key.startsWith('bus-') ? 'history-bus' : 'history-per';
+            const tipo = key.startsWith('bus') ? 'bus' : 'per';
             
             let testoStorico = removedTask.text;
-            if (removedTask.time) {
-                testoStorico = `[${removedTask.time}] ${testoStorico}`;
-            }
-
-            appData[destinazioneStorico].unshift({
+            if (removedTask.time) testoStorico = `[${removedTask.time}] ${testoStorico}`;
+            
+            appData[`history-${tipo}`].unshift({
                 text: testoStorico,
                 dateAdded: oggiReale.toLocaleDateString('it-IT')
             });
-
+            
             renderLists();
             saveToCloud();
         }
 
         function deleteTaskPermanently(key, index) {
-            appData[key].splice(index, 1);
-            renderLists();
-            saveToCloud();
+            if (confirm("Eliminare definitivamente questo task?")) {
+                appData[key].splice(index, 1);
+                renderLists();
+                saveToCloud();
+            }
         }
 
         function deleteHistoryTask(tipo, index) {
-            appData[`history-${tipo}`].splice(index, 1);
-            renderLists();
-            saveToCloud();
+            if (confirm("Eliminare questa voce dallo storico?")) {
+                appData[`history-${tipo}`].splice(index, 1);
+                renderLists();
+                saveToCloud();
+            }
         }
-
-        // Avvio iniziale dell'app al caricamento della pagina
-        fetchFromCloud();
     </script>
 </body>
 </html>
