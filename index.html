@@ -346,6 +346,7 @@
             .history-grid { display: flex; flex-direction: column; gap: 15px; }
         }
     </style>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
@@ -538,18 +539,18 @@
     </div>
 
     <script>
-        // --- CONFIGURAZIONE ACCOUNT SUPABASE CORRETTA ---
+        // --- CONFIGURAZIONE ACCOUNT SUPABASE ---
         const SUPABASE_URL = "https://cdyozgrfnoenyebfklvo.supabase.co";
         const SUPABASE_KEY = "sb_publishable_cwNcGiaGO0R7SvUG_10mSQ_DTfOck72";
 
-        // Inizializzazione client Supabase nativo usando le variabili corrette
+        // Inizializzazione client nativo
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let dataStoricoVisualizzato = new Date();
         const oggiReale = new Date();
         document.getElementById('current-date').innerText = oggiReale.toLocaleDateString('it-IT');
 
-        // Struttura dati base di fallback
+        // Struttura dati globale dell'applicazione
         let appData = {
             'bus-meetings': [], 'per-meetings': [],
             'bus-recurring': [], 'per-recurring': [],
@@ -559,13 +560,11 @@
             'ultimoAccesso': oggiReale.toLocaleDateString('it-IT')
         };
 
-        // Riferimento all'ID primario fisso (usiamo l'id 1 per memorizzare tutto lo stato dell'app)
         const RECORD_ID = 1;
 
-        // --- COMUNICAZIONE DATABASE CLOUD CON METODI SUPABASE NATIVI ---
+        // --- FETCH E SALVATAGGIO CLOUD ---
         async function fetchFromCloud() {
             try {
-                // Utilizza la nuova tabella prelevando l'intero JSON dalla colonna "Titolo" dell'id 1
                 const { data, error } = await supabaseClient
                     .from('todos')
                     .select('Titolo')
@@ -574,10 +573,10 @@
                 if (error) throw error;
 
                 if (data && data.length > 0 && data[0].Titolo) {
-                    // Decodifica la stringa JSON salvata nella colonna Titolo
                     appData = JSON.parse(data[0].Titolo);
                     controllaCambioGiorno();
                     renderLists();
+                    aggiornaRangeSettimanaStorico();
                     
                     const statusText = document.getElementById('cloud-status-text');
                     if (statusText) {
@@ -586,7 +585,6 @@
                         statusText.innerText = "✅ Connesso - Cloud Sincronizzato";
                     }
                 } else {
-                    // Se la riga non esiste ancora (es. primo avvio in assoluto), la creiamo inserendo i dati base
                     await saveToCloud();
                 }
             } catch (err) {
@@ -602,10 +600,7 @@
 
         async function saveToCloud() {
             try {
-                // Converte l'oggetto appData in stringa per salvarlo in "Titolo"
                 const stringData = JSON.stringify(appData);
-
-                // Eseguiamo l'upsert sulla tabella "todos" puntando all'id fisso 1
                 const { error } = await supabaseClient
                     .from('todos')
                     .upsert({
@@ -619,47 +614,155 @@
             }
         }
 
-        // POLLING AUTOMATICO IN TEMPO REALE (Ogni 4 secondi scarica i dati aggiornati dall'altro dispositivo)
-        setInterval(fetchFromCloud, 4000);
-        // Primo caricamento all'apertura della pagina
-        fetchFromCloud();
+        // --- NUOVA FUNZIONE INTEGRATA PER AGGIUNGERE I TASK (INTEGRAZIONE COMPLETA) ---
+        async function addTask(categoria) {
+            const textInput = document.getElementById(`input-${categoria}`);
+            if (!textInput || !textInput.value.trim()) {
+                alert("Inserisci un testo prima di aggiungere!");
+                return;
+            }
 
-        // --- AUTOMAZIONE CAMBIO GIORNO ---
-        function controllaCambioGiorno() {
-            const stringaOggi = oggiReale.toLocaleDateString('it-IT');
-            if (appData.ultimoAccesso !== stringaOggi && appData.ultimoAccesso !== "") {
-                const dataIeriStr = appData.ultimoAccesso;
+            const testoValore = textInput.value.trim();
+            let nuovoOggettoTask = {
+                id: Date.now().toString(),
+                text: testoValore,
+                completed: false
+            };
 
-                ['bus', 'per'].forEach(tipo => {
-                    appData[`${tipo}-meetings`].forEach(meeting => {
-                        let testoStorico = `[${meeting.time}] ${meeting.text} (Archivio Autom.)`;
-                        appData[`history-${tipo}`].unshift({
-                            text: testoStorico,
-                            dateAdded: dataIeriStr
-                        });
+            // Gestione campi extra in base al tipo di box inserito
+            if (categoria.includes('meetings')) {
+                const timeInput = document.getElementById(`time-${categoria}`);
+                nuovoOggettoTask.time = timeInput ? timeInput.value : "00:00";
+            } else if (categoria.includes('recurring')) {
+                const selectOption = document.getElementById(`select-${categoria}`);
+                nuovoOggettoTask.type = selectOption ? selectOption.value : "tutti";
+            } else if (categoria.includes('today') || categoria.includes('someday')) {
+                const prioritySelect = document.getElementById(`select-${categoria}`);
+                nuovoOggettoTask.priority = prioritySelect ? prioritySelect.value : "yellow";
+            }
+
+            // Inserimento locale e salvataggio immediato in Cloud
+            appData[categoria].push(nuovoOggettoTask);
+            textInput.value = ""; // Svuota l'input
+            
+            renderLists();
+            await saveToCloud();
+        }
+
+        // --- FUNZIONE PER COMPLETARE / SPUNTARE UN TASK ---
+        async function checkTask(categoria, taskId) {
+            let lista = appData[categoria];
+            let index = lista.findIndex(t => t.id === taskId);
+            
+            if (index !== -1) {
+                let task = lista[index];
+                
+                // Se è un meeting o un task odierno, quando viene completato si sposta nello storico giornaliero
+                if (categoria.includes('meetings') || categoria.includes('today')) {
+                    let prefissoStorico = categoria.startsWith('bus') ? 'history-bus' : 'history-per';
+                    let tagOrario = task.time ? `[${task.time}] ` : "";
+                    
+                    appData[prefissoStorico].unshift({
+                        text: `${tagOrario}${task.text} (Completato)`,
+                        dateAdded: new Date().toLocaleDateString('it-IT')
                     });
-                    appData[`${tipo}-meetings`] = [];
-                });
-
-                ['bus', 'per'].forEach(tipo => {
-                    appData[`${tipo}-today`].forEach(task => {
-                        if (!task.text.includes('(Residuo)')) {
-                            task.text = `${task.text} <span style="color:#e53e3e; font-size:0.8em; font-weight:bold;">(Residuo)</span>`;
-                        }
-                    });
-                });
-
-                appData.ultimoAccesso = stringaOggi;
-                saveToCloud();
-            } else if (appData.ultimoAccesso === "") {
-                appData.ultimoAccesso = stringaOggi;
-                saveToCloud();
+                    
+                    // Rimuovi dalla lista attiva
+                    lista.splice(index, 1);
+                } else {
+                    // Per i ricorrenti e someday inverte semplicemente lo stato grafico di sbarramento
+                    task.completed = !task.completed;
+                }
+                
+                renderLists();
+                await saveToCloud();
             }
         }
 
-        // --- MODAL POPUP ---
-        function apriCloudStatusModal() {
-            document.getElementById('cloud-modal').style.display = 'flex';
+        // --- FUNZIONE PER CANCELLARE UN TASK ---
+        async function deleteTask(categoria, taskId) {
+            if (confirm("Vuoi eliminare definitivamente questa attività?")) {
+                appData[categoria] = appData[categoria].filter(t => t.id !== taskId);
+                renderLists();
+                await saveToCloud();
+            }
         }
-        function chiudiCloudStatusModal() {
-            document.getElementById('cloud-modal').style.display = 'none
+
+        // --- RENDERING VISIVO COMPLETO SULLO SCHERMO ---
+        function renderLists() {
+            const categorie = ['bus-meetings', 'per-meetings', 'bus-recurring', 'per-recurring', 'bus-today', 'per-today', 'bus-someday', 'per-someday'];
+            
+            categorie.forEach(cat => {
+                const ulElement = document.getElementById(`list-${cat}`);
+                if (!ulElement) return;
+                ulElement.innerHTML = "";
+
+                // Ordina i meeting per orario cronologico
+                if (cat.includes('meetings')) {
+                    appData[cat].sort((a, b) => a.time.localeCompare(b.time));
+                }
+
+                appData[cat].forEach(task => {
+                    const li = document.createElement('li');
+                    li.className = 'task-item';
+                    
+                    // Applica la classe colore per le priorità
+                    if (task.priority) {
+                        li.classList.add(`priority-${task.priority}`);
+                    }
+
+                    let testoRender = "";
+                    if (task.time) testoRender += `<strong style="color:#0056b3; margin-right:6px;">${task.time}</strong> `;
+                    testoRender += task.completed ? `<del>${task.text}</del>` : task.text;
+                    if (task.type === 'feriali') testoRender += ` <span style="font-size:0.8em; color:#718096;">(Feriali)</span>`;
+
+                    li.innerHTML = `
+                        <span>${testoRender}</span>
+                        <div class="task-buttons">
+                            <button class="btn-check" onclick="checkTask('${cat}', '${task.id}')">✓</button>
+                            <button class="btn-delete" onclick="deleteTask('${cat}', '${task.id}')">🗑️</button>
+                        </div>
+                    `;
+                    ulElement.appendChild(li);
+                });
+            });
+
+            // Renderizza i box del Calendario Storico Settimanale
+            renderStorico();
+        }
+
+        function renderStorico() {
+            ['bus', 'per'].forEach(tipo => {
+                const ulStorico = document.getElementById(`list-history-${tipo}`);
+                if (!ulStorico) return;
+                ulStorico.innerHTML = "";
+
+                let dataSelezionataStr = dataStoricoVisualizzato.toLocaleDateString('it-IT');
+                let elementiFiltrati = appData[`history-${tipo}`].filter(item => item.dateAdded === dataSelezionataStr);
+
+                if (elementiFiltrati.length === 0) {
+                    ulStorico.innerHTML = `<li style="color:white; font-style:italic; font-size:0.9em; text-align:center; padding:10px;">Nessuna attività registrata in questa data</li>`;
+                } else {
+                    elementiFiltrati.forEach(item => {
+                        const li = document.createElement('li');
+                        li.className = 'task-item';
+                        li.style.borderLeft = "5px solid #4a5568";
+                        li.innerHTML = `<span>${item.text}</span><span style="font-size:0.8em; color:#a0aec0;">${item.dateAdded}</span>`;
+                        ulStorico.appendChild(li);
+                    });
+                }
+            });
+        }
+
+        // --- NAVIGAZIONE CALENDARIO STORICO ---
+        function aggiornaRangeSettimanaStorico() {
+            const rangeText = document.getElementById('week-range');
+            if (rangeText) {
+                rangeText.innerText = "Giorno Visualizzato: " + dataStoricoVisualizzato.toLocaleDateString('it-IT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            }
+        }
+
+        function navigaSettimana(giorni) {
+            dataStoricoVisualizzato.setDate(dataStoricoVisualizzato.getDate() + (giorni / Math.abs(giorni || 1))); // Sposta di un giorno alla volta per precisione
+            aggiornaRangeSettimanaStorico();
+            render
