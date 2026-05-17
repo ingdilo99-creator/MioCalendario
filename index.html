@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Morpheus TO DO List - Cloud</title>
-    <style>
+<style>
         /* --- STILE GENERALE --- */
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -67,7 +67,7 @@
         .bg-business { background-color: #4a5568; }
         .bg-personal { background-color: #1a365d; }
 
-        /* --- BLOCCHI DELLE SEZIONI --- */
+        /* --- BLOCCHI DELLE SEZIONI (COLORI SCURI SCELTI) --- */
         .section-box {
             border: 2px solid;
             border-radius: 12px;
@@ -77,7 +77,7 @@
             flex-direction: column;
             justify-content: space-between;
             box-shadow: 0 4px 6px rgba(0,0,0,0.08);
-            position: relative;
+            position: relative; /* Necessario per posizionare il tag mobile */
         }
         
         .border-business { 
@@ -89,6 +89,7 @@
             background-color: #8FAADC; 
         }
 
+        /* Etichette interne invisibili su PC, appariranno solo su Mobile */
         .mobile-category-tag {
             display: none;
             font-size: 0.75em;
@@ -309,45 +310,110 @@
             cursor: pointer;
             color: #718096;
         }
-        .status-indicator {
-            padding: 10px;
-            border-radius: 6px;
-            margin-bottom: 15px;
-            font-weight: bold;
-            text-align: center;
-        }
 
+        /* ==========================================================================
+           ⚡ BREAKPOINT MOBILE: OTTIMIZZAZIONE COMPLETA INTERFACCIA ⚡
+           ========================================================================== */
         @media (max-width: 768px) {
-            body { padding: 10px; }
+            body {
+                padding: 10px;
+            }
+            
+            /* Sistema l'header: TO DO fisso in alto e Sincronizzazione centrato sotto di esso */
             .header-container {
                 display: flex;
-                flex-direction: column;
+                flex-direction: column; /* Sposta il bottone cloud SOTTO al titolo */
                 align-items: center;
                 gap: 12px;
                 margin-bottom: 20px;
                 width: 100%;
             }
-            .header { width: 100%; text-align: center; order: 1; }
-            .header h1 { font-size: 1.5em; white-space: nowrap; margin: 0; }
-            .btn-settings { order: 2; width: 100%; text-align: center; padding: 12px; box-sizing: border-box; font-size: 1em; }
-            .column-header { display: none !important; }
-            .main-grid { display: flex; flex-direction: column; gap: 15px; }
-            .mobile-category-tag { display: inline-block; }
-            .row-separator { display: none; }
-            .section-box { height: auto; min-height: 190px; padding-top: 35px; }
-            .add-form { flex-wrap: wrap; }
-            .add-form input[type="text"] { flex-grow: 1; min-width: 120px; }
-            .add-form select { flex-grow: 1; max-width: none; }
-            .add-form button { width: 100%; padding: 10px; margin-top: 2px; }
-            .history-controls { flex-direction: column; align-items: stretch; text-align: center; }
-            .nav-buttons { justify-content: center; }
-            .datepicker-container { justify-content: center; width: 100%; }
-            .datepicker-container input { flex-grow: 1; }
-            .history-grid { display: flex; flex-direction: column; gap: 15px; }
+            .header {
+                width: 100%;
+                text-align: center;
+                order: 1; /* Forza il titolo TO DO a stare sopra */
+            }
+            .header h1 {
+                font-size: 1.5em;
+                white-space: nowrap;
+                margin: 0;
+            }
+            .btn-settings {
+                order: 2; /* Forza il bottone Sincronizzazione a stare sotto */
+                width: 100%;
+                text-align: center;
+                padding: 12px;
+                box-sizing: border-box;
+                font-size: 1em;
+            }
+            
+            /* Nascondiamo completamente i due grandi cartelloni che vagavano a caso */
+            .column-header {
+                display: none !important;
+            }
+            
+            /* Griglia a colonna singola nativa senza alterare gli "order" */
+            .main-grid {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            /* Facciamo comparire la targhetta della categoria nell'angolo del box */
+            .mobile-category-tag {
+                display: inline-block;
+            }
+            
+            .row-separator {
+                display: none;
+            }
+            
+            .section-box {
+                height: auto;
+                min-height: 190px;
+                padding-top: 35px; /* Crea spazio in alto per non sovrapporsi alla targhetta */
+            }
+            
+            .add-form {
+                flex-wrap: wrap;
+            }
+            .add-form input[type="text"] {
+                flex-grow: 1;
+                min-width: 120px;
+            }
+            .add-form select {
+                flex-grow: 1;
+                max-width: none;
+            }
+            .add-form button {
+                width: 100%;
+                padding: 10px;
+                margin-top: 2px;
+            }
+
+            /* Storico */
+            .history-controls {
+                flex-direction: column;
+                align-items: stretch;
+                text-align: center;
+            }
+            .nav-buttons {
+                justify-content: center;
+            }
+            .datepicker-container {
+                justify-content: center;
+                width: 100%;
+            }
+            .datepicker-container input {
+                flex-grow: 1;
+            }
+            .history-grid {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
         }
     </style>
-    
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -363,7 +429,6 @@
         <div class="column-header bg-personal">Personal</div>
 
         <div class="section-box border-business">
-            <span class="mobile-category-tag tag-bus">Business</span>
             <div>
                 <p class="section-title text-business">Meeting / Call / Eventi</p>
                 <div class="task-container-scroll"><ul class="task-list" id="list-bus-meetings"></ul></div>
@@ -376,7 +441,6 @@
         </div>
         
         <div class="section-box border-personal">
-            <span class="mobile-category-tag tag-per">Personal</span>
             <div>
                 <p class="section-title text-personal">Meeting / Call / Eventi</p>
                 <div class="task-container-scroll"><ul class="task-list" id="list-per-meetings"></ul></div>
@@ -391,7 +455,6 @@
         <div class="row-separator"></div>
 
         <div class="section-box border-business">
-            <span class="mobile-category-tag tag-bus">Business</span>
             <div>
                 <p class="section-title text-business">Ricorrenti (Tutti i giorni / Feriali)</p>
                 <div class="task-container-scroll"><ul class="task-list" id="list-bus-recurring"></ul></div>
@@ -407,7 +470,6 @@
         </div>
 
         <div class="section-box border-personal">
-            <span class="mobile-category-tag tag-per">Personal</span>
             <div>
                 <p class="section-title text-personal">Ricorrenti (Tutti i giorni / Feriali)</p>
                 <div class="task-container-scroll"><ul class="task-list" id="list-per-recurring"></ul></div>
@@ -425,7 +487,6 @@
         <div class="row-separator"></div>
 
         <div class="section-box border-business">
-            <span class="mobile-category-tag tag-bus">Business</span>
             <div>
                 <p class="section-title text-business">Task della giornata</p>
                 <div class="task-container-scroll"><ul class="task-list" id="list-bus-today"></ul></div>
@@ -442,7 +503,6 @@
         </div>
 
         <div class="section-box border-personal">
-            <span class="mobile-category-tag tag-per">Personal</span>
             <div>
                 <p class="section-title text-personal">Task della giornata</p>
                 <div class="task-container-scroll"><ul class="task-list" id="list-per-today"></ul></div>
@@ -461,7 +521,6 @@
         <div class="row-separator"></div>
 
         <div class="section-box border-business">
-            <span class="mobile-category-tag tag-bus">Business</span>
             <div>
                 <p class="section-title text-business">Task Someday</p>
                 <div class="task-container-scroll"><ul class="task-list" id="list-bus-someday"></ul></div>
@@ -478,7 +537,6 @@
         </div>
 
         <div class="section-box border-personal">
-            <span class="mobile-category-tag tag-per">Personal</span>
             <div>
                 <p class="section-title text-personal">Task Someday</p>
                 <div class="task-container-scroll"><ul class="task-list" id="list-per-someday"></ul></div>
@@ -530,11 +588,11 @@
         <div class="modal-box">
             <button class="modal-close" onclick="chiudiCloudStatusModal()">✕</button>
             <h3>☁️ Hub Sincronizzazione Realtime</h3>
-            <div class="status-indicator" id="cloud-status-text" style="background: #e2e8f0; color: #4a5568;">Connessione a Supabase Cloud...</div>
+            <div class="status-indicator" id="cloud-status-text">Connessione a Supabase Cloud...</div>
             <p style="font-size: 0.9em; color:#4a5568; line-height: 1.4;">
                 La tua lista è ora salvata in cloud su Supabase. Ogni modifica eseguita da PC verrà riflessa istantaneamente sul tuo smartphone e viceversa.
             </p>
-            <p style="font-size: 0.8em; color:#718096;">ID Riga Database: Record Fisso #1 (Tabella Semplificata)</p>
+            <p style="font-size: 0.8em; color:#718096;">ID Sincronizzazione: unico_utente (Account Gratuito Corrente)</p>
         </div>
     </div>
 
@@ -543,14 +601,11 @@
         const SUPABASE_URL = "https://cdyozgrfnoenyebfklvo.supabase.co";
         const SUPABASE_KEY = "sb_publishable_cwNcGiaGO0R7SvUG_10mSQ_DTfOck72";
 
-        // Inizializzazione client nativo
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
         let dataStoricoVisualizzato = new Date();
         const oggiReale = new Date();
         document.getElementById('current-date').innerText = oggiReale.toLocaleDateString('it-IT');
 
-        // Struttura dati globale dell'applicazione
+        // Struttura dati base di fallback
         let appData = {
             'bus-meetings': [], 'per-meetings': [],
             'bus-recurring': [], 'per-recurring': [],
@@ -560,209 +615,267 @@
             'ultimoAccesso': oggiReale.toLocaleDateString('it-IT')
         };
 
-        const RECORD_ID = 1;
-
-        // --- FETCH E SALVATAGGIO CLOUD ---
+        // --- COMUNICAZIONE DATABASE CLOUD ---
         async function fetchFromCloud() {
             try {
-                const { data, error } = await supabaseClient
-                    .from('todos')
-                    .select('Titolo')
-                    .eq('id', RECORD_ID);
-
-                if (error) throw error;
-
-                if (data && data.length > 0 && data[0].Titolo) {
-                    appData = JSON.parse(data[0].Titolo);
+                const response = await fetch(`${SUPABASE_URL}/rest/v1/todo_morpheus?user_id=eq.unico_utente`, {
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": `Bearer ${SUPABASE_KEY}`
+                    }
+                });
+                const data = await response.json();
+                if (data && data.length > 0) {
+                    appData = data[0].data_tasks;
                     controllaCambioGiorno();
                     renderLists();
-                    aggiornaRangeSettimanaStorico();
-                    
-                    const statusText = document.getElementById('cloud-status-text');
-                    if (statusText) {
-                        statusText.style.background = '#d4edda';
-                        statusText.style.color = '#155724';
-                        statusText.innerText = "✅ Connesso - Cloud Sincronizzato";
-                    }
-                } else {
-                    await saveToCloud();
+                    document.getElementById('cloud-status-text').style.background = '#d4edda';
+                    document.getElementById('cloud-status-text').style.color = '#155724';
+                    document.getElementById('cloud-status-text').innerText = "✅ Connesso - Cloud Sincronizzato";
                 }
             } catch (err) {
                 console.error("Errore download cloud:", err);
-                const statusText = document.getElementById('cloud-status-text');
-                if (statusText) {
-                    statusText.style.background = '#f8d7da';
-                    statusText.style.color = '#721c24';
-                    statusText.innerText = "⚠️ Errore di connessione cloud";
-                }
+                document.getElementById('cloud-status-text').style.background = '#f8d7da';
+                document.getElementById('cloud-status-text').style.color = '#721c24';
+                document.getElementById('cloud-status-text').innerText = "⚠️ Errore di connessione cloud";
             }
         }
 
         async function saveToCloud() {
             try {
-                const stringData = JSON.stringify(appData);
-                const { error } = await supabaseClient
-                    .from('todos')
-                    .upsert({
-                        id: RECORD_ID,
-                        Titolo: stringData
-                    }, { onConflict: 'id' });
-
-                if (error) throw error;
+                await fetch(`${SUPABASE_URL}/rest/v1/todo_morpheus?user_id=eq.unico_utente`, {
+                    method: "PATCH",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": `Bearer ${SUPABASE_KEY}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        data_tasks: appData,
+                        updated_at: new Date().toISOString()
+                    })
+                });
             } catch (err) {
                 console.error("Errore caricamento cloud:", err);
             }
         }
 
-        // --- NUOVA FUNZIONE INTEGRATA PER AGGIUNGERE I TASK (INTEGRAZIONE COMPLETA) ---
-        async function addTask(categoria) {
-            const textInput = document.getElementById(`input-${categoria}`);
-            if (!textInput || !textInput.value.trim()) {
-                alert("Inserisci un testo prima di aggiungere!");
-                return;
-            }
+        // POLLING AUTOMATICO IN TEMPO REALE (Scarica aggiornamenti ogni 4 secondi se fatti da telefono)
+        setInterval(fetchFromCloud, 4000);
 
-            const testoValore = textInput.value.trim();
-            let nuovoOggettoTask = {
-                id: Date.now().toString(),
-                text: testoValore,
-                completed: false
-            };
+        // --- AUTOMAZIONE CAMBIO GIORNO ---
+        function controllaCambioGiorno() {
+            const stringaOggi = oggiReale.toLocaleDateString('it-IT');
+            if (appData.ultimoAccesso !== stringaOggi && appData.ultimoAccesso !== "") {
+                const dataIeriStr = appData.ultimoAccesso;
 
-            // Gestione campi extra in base al tipo di box inserito
-            if (categoria.includes('meetings')) {
-                const timeInput = document.getElementById(`time-${categoria}`);
-                nuovoOggettoTask.time = timeInput ? timeInput.value : "00:00";
-            } else if (categoria.includes('recurring')) {
-                const selectOption = document.getElementById(`select-${categoria}`);
-                nuovoOggettoTask.type = selectOption ? selectOption.value : "tutti";
-            } else if (categoria.includes('today') || categoria.includes('someday')) {
-                const prioritySelect = document.getElementById(`select-${categoria}`);
-                nuovoOggettoTask.priority = prioritySelect ? prioritySelect.value : "yellow";
-            }
-
-            // Inserimento locale e salvataggio immediato in Cloud
-            appData[categoria].push(nuovoOggettoTask);
-            textInput.value = ""; // Svuota l'input
-            
-            renderLists();
-            await saveToCloud();
-        }
-
-        // --- FUNZIONE PER COMPLETARE / SPUNTARE UN TASK ---
-        async function checkTask(categoria, taskId) {
-            let lista = appData[categoria];
-            let index = lista.findIndex(t => t.id === taskId);
-            
-            if (index !== -1) {
-                let task = lista[index];
-                
-                // Se è un meeting o un task odierno, quando viene completato si sposta nello storico giornaliero
-                if (categoria.includes('meetings') || categoria.includes('today')) {
-                    let prefissoStorico = categoria.startsWith('bus') ? 'history-bus' : 'history-per';
-                    let tagOrario = task.time ? `[${task.time}] ` : "";
-                    
-                    appData[prefissoStorico].unshift({
-                        text: `${tagOrario}${task.text} (Completato)`,
-                        dateAdded: new Date().toLocaleDateString('it-IT')
+                ['bus', 'per'].forEach(tipo => {
+                    appData[`${tipo}-meetings`].forEach(meeting => {
+                        let testoStorico = `[${meeting.time}] ${meeting.text} (Archivio Autom.)`;
+                        appData[`history-${tipo}`].unshift({
+                            text: testoStorico,
+                            dateAdded: dataIeriStr
+                        });
                     });
-                    
-                    // Rimuovi dalla lista attiva
-                    lista.splice(index, 1);
-                } else {
-                    // Per i ricorrenti e someday inverte semplicemente lo stato grafico di sbarramento
-                    task.completed = !task.completed;
-                }
-                
-                renderLists();
-                await saveToCloud();
-            }
-        }
-
-        // --- FUNZIONE PER CANCELLARE UN TASK ---
-        async function deleteTask(categoria, taskId) {
-            if (confirm("Vuoi eliminare definitivamente questa attività?")) {
-                appData[categoria] = appData[categoria].filter(t => t.id !== taskId);
-                renderLists();
-                await saveToCloud();
-            }
-        }
-
-        // --- RENDERING VISIVO COMPLETO SULLO SCHERMO ---
-        function renderLists() {
-            const categorie = ['bus-meetings', 'per-meetings', 'bus-recurring', 'per-recurring', 'bus-today', 'per-today', 'bus-someday', 'per-someday'];
-            
-            categorie.forEach(cat => {
-                const ulElement = document.getElementById(`list-${cat}`);
-                if (!ulElement) return;
-                ulElement.innerHTML = "";
-
-                // Ordina i meeting per orario cronologico
-                if (cat.includes('meetings')) {
-                    appData[cat].sort((a, b) => a.time.localeCompare(b.time));
-                }
-
-                appData[cat].forEach(task => {
-                    const li = document.createElement('li');
-                    li.className = 'task-item';
-                    
-                    // Applica la classe colore per le priorità
-                    if (task.priority) {
-                        li.classList.add(`priority-${task.priority}`);
-                    }
-
-                    let testoRender = "";
-                    if (task.time) testoRender += `<strong style="color:#0056b3; margin-right:6px;">${task.time}</strong> `;
-                    testoRender += task.completed ? `<del>${task.text}</del>` : task.text;
-                    if (task.type === 'feriali') testoRender += ` <span style="font-size:0.8em; color:#718096;">(Feriali)</span>`;
-
-                    li.innerHTML = `
-                        <span>${testoRender}</span>
-                        <div class="task-buttons">
-                            <button class="btn-check" onclick="checkTask('${cat}', '${task.id}')">✓</button>
-                            <button class="btn-delete" onclick="deleteTask('${cat}', '${task.id}')">🗑️</button>
-                        </div>
-                    `;
-                    ulElement.appendChild(li);
+                    appData[`${tipo}-meetings`] = [];
                 });
-            });
 
-            // Renderizza i box del Calendario Storico Settimanale
-            renderStorico();
-        }
-
-        function renderStorico() {
-            ['bus', 'per'].forEach(tipo => {
-                const ulStorico = document.getElementById(`list-history-${tipo}`);
-                if (!ulStorico) return;
-                ulStorico.innerHTML = "";
-
-                let dataSelezionataStr = dataStoricoVisualizzato.toLocaleDateString('it-IT');
-                let elementiFiltrati = appData[`history-${tipo}`].filter(item => item.dateAdded === dataSelezionataStr);
-
-                if (elementiFiltrati.length === 0) {
-                    ulStorico.innerHTML = `<li style="color:white; font-style:italic; font-size:0.9em; text-align:center; padding:10px;">Nessuna attività registrata in questa data</li>`;
-                } else {
-                    elementiFiltrati.forEach(item => {
-                        const li = document.createElement('li');
-                        li.className = 'task-item';
-                        li.style.borderLeft = "5px solid #4a5568";
-                        li.innerHTML = `<span>${item.text}</span><span style="font-size:0.8em; color:#a0aec0;">${item.dateAdded}</span>`;
-                        ulStorico.appendChild(li);
+                ['bus', 'per'].forEach(tipo => {
+                    appData[`${tipo}-today`].forEach(task => {
+                        if (!task.text.includes('(Residuo)')) {
+                            task.text = `${task.text} <span style="color:#e53e3e; font-size:0.8em; font-weight:bold;">(Residuo)</span>`;
+                        }
                     });
-                }
-            });
+                });
+
+                appData.ultimoAccesso = stringaOggi;
+                saveToCloud();
+            } else if (appData.ultimoAccesso === "") {
+                appData.ultimoAccesso = stringaOggi;
+                saveToCloud();
+            }
         }
 
-        // --- NAVIGAZIONE CALENDARIO STORICO ---
-        function aggiornaRangeSettimanaStorico() {
-            const rangeText = document.getElementById('week-range');
-            if (rangeText) {
-                rangeText.innerText = "Giorno Visualizzato: " + dataStoricoVisualizzato.toLocaleDateString('it-IT', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-            }
+        // --- MODAL POPUP ---
+        function apriCloudStatusModal() {
+            document.getElementById('cloud-modal').style.display = 'flex';
+        }
+        function chiudiCloudStatusModal() {
+            document.getElementById('cloud-modal').style.display = 'none';
+        }
+
+        // --- CALCOLO INTERVALLI SETTIMANALI ---
+        function aggiornaIntervalloSettimanaVisibile() {
+            const d = new Date(dataStoricoVisualizzato);
+            const giornoSettimana = d.getDay();
+            const inizioDom = new Date(d);
+            inizioDom.setDate(d.getDate() - giornoSettimana);
+            const fineSabato = new Date(inizioDom);
+            fineSabato.setDate(inizioDom.getDate() + 6);
+
+            document.getElementById('week-range').innerText = `da Dom ${inizioDom.toLocaleDateString('it-IT')} a Sab ${fineSabato.toLocaleDateString('it-IT')}`;
+            return { inizio: azzeraOra(inizioDom), fine: azzeraOra(fineSabato) };
+        }
+
+        function convertiData(stringaData) {
+            const parti = stringaData.split('/');
+            return new Date(parti[2], parti[1] - 1, parti[0]);
+        }
+        function azzeraOra(d) {
+            const nuovaData = new Date(d);
+            nuovaData.setHours(0,0,0,0);
+            return nuovaData;
         }
 
         function navigaSettimana(giorni) {
-            dataStoricoVisualizzato.setDate(dataStoricoVisualizzato.getDate() + (giorni / Math.abs(giorni || 1))); // Sposta di un giorno alla volta per precisione
-            aggiornaRangeSettimanaStorico();
-            render
+            dataStoricoVisualizzato.setDate(dataStoricoVisualizzato.getDate() + giorni);
+            renderLists();
+        }
+        function vaiAggi() {
+            dataStoricoVisualizzato = new Date();
+            document.getElementById('history-date-picker').value = '';
+            renderLists();
+        }
+        function selezionaDataCalendario(valoreData) {
+            if (!valoreData) return;
+            dataStoricoVisualizzato = new Date(valoreData);
+            renderLists();
+        }
+
+        // --- RENDER DELLE INTERFACCE ---
+        function renderLists() {
+            const rangeSettimana = aggiornaIntervalloSettimanaVisibile();
+            const giornoOggi = oggiReale.getDay();
+            const esWeekend = (giornoOggi === 0 || giornoOggi === 6);
+
+            const chiaviListe = ['bus-meetings', 'per-meetings', 'bus-recurring', 'per-recurring', 'bus-today', 'per-today', 'bus-someday', 'per-someday'];
+            
+            chiaviListe.forEach(key => {
+                const listElement = document.getElementById(`list-${key}`);
+                if (!listElement) return;
+                listElement.innerHTML = '';
+                
+                if (appData[key]) {
+                    appData[key].forEach((task, index) => {
+                        if (key.includes('recurring') && task.option === 'feriali' && esWeekend) return; 
+
+                        const li = document.createElement('li');
+                        li.className = 'task-item';
+                        if (task.priority) li.classList.add(`priority-${task.priority}`);
+                        
+                        let extraInfo = '';
+                        if (task.option === 'feriali') extraInfo = ' <small style="color:#718096;">(Feriali)</small>';
+                        if (task.time) extraInfo = ` <strong>[${task.time}]</strong>`;
+
+                        li.innerHTML = `
+                            <span>${extraInfo} ${task.text}</span>
+                            <div class="task-buttons">
+                                <button class="btn-check" onclick="archiveTask('${key}', ${index})" title="Completa e Sposta in Storico">✅</button>
+                                <button class="btn-delete" onclick="deleteTaskPermanently('${key}', ${index})" title="Elimina Definitivamente">🗑️</button>
+                            </div>
+                        `;
+                        listElement.appendChild(li);
+                    });
+                }
+            });
+
+            ['bus', 'per'].forEach(tipo => {
+                const histElement = document.getElementById(`list-history-${tipo}`);
+                if (!histElement) return;
+                histElement.innerHTML = '';
+                
+                if (appData[`history-${tipo}`]) {
+                    appData[`history-${tipo}`].forEach((task, index) => {
+                        const dataTask = convertiData(task.dateAdded);
+                        if (dataTask >= rangeSettimana.inizio && dataTask <= rangeSettimana.fine) {
+                            const li = document.createElement('li');
+                            li.className = 'task-item';
+                            li.style.background = '#f1f3f5';
+                            li.innerHTML = `
+                                <span><small style="color:#718096;">[${task.dateAdded}]</small> ${task.text}</span>
+                                <button class="btn-delete" onclick="deleteHistoryTask('${tipo}', ${index})">🗑️</button>
+                            `;
+                            histElement.appendChild(li);
+                        }
+                    });
+                }
+            });
+        }
+
+        // --- AZIONI AGGIUNTA, ARCHIVIAZIONE ED ELIMINAZIONE ---
+        function addTask(key) {
+            const inputEl = document.getElementById(`input-${key}`);
+            const text = inputEl.value.trim();
+            if (text === '') return;
+
+            let newTask = { text: text };
+
+            if (key.includes('meetings')) {
+                const timeEl = document.getElementById(`time-${key}`);
+                newTask.time = timeEl.value;
+            } else if (key.includes('recurring')) {
+                const selectEl = document.getElementById(`select-${key}`);
+                newTask.option = selectEl.value;
+            } else {
+                const selectEl = document.getElementById(`select-${key}`);
+                newTask.priority = selectEl.value;
+            }
+
+            appData[key].push(newTask);
+
+            if (key.includes('meetings')) {
+                appData[key].sort((a, b) => a.time.localeCompare(b.time));
+            }
+
+            inputEl.value = '';
+            renderLists();
+            saveToCloud();
+        }
+
+        function archiveTask(key, index) {
+            const removedTask = appData[key].splice(index, 1)[0];
+            const destinazioneStorico = key.startsWith('bus-') ? 'history-bus' : 'history-per';
+            
+            let testoStorico = removedTask.text;
+            if (removedTask.time) testoStorico = `[${removedTask.time}] ${testoStorico}`;
+            
+            const taskStorico = {
+                text: testoStorico,
+                dateAdded: oggiReale.toLocaleDateString('it-IT')
+            };
+
+            appData[destinazioneStorico].unshift(taskStorico);
+            renderLists();
+            saveToCloud();
+        }
+
+        function deleteTaskPermanently(key, index) {
+            if (confirm("Vuoi eliminare definitivamente questo task senza salvarlo nello storico?")) {
+                appData[key].splice(index, 1);
+                renderLists();
+                saveToCloud();
+            }
+        }
+
+        function deleteHistoryTask(tipo, index) {
+            appData[`history-${tipo}`].splice(index, 1);
+            renderLists();
+            saveToCloud();
+        }
+
+        // Inizializzazione tasto Invio
+        document.querySelectorAll('.add-form input').forEach(input => {
+            input.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    const form = this.closest('.add-form');
+                    const btn = form.querySelector('button');
+                    if (btn) btn.click();
+                }
+            });
+        });
+
+        // Primo avvio dell'applicazione
+        fetchFromCloud();
+    </script>
+</body>
+</html>
